@@ -1,0 +1,8 @@
+---
+galaxy_info:
+  author: Justin Herron
+  description: Install software provided by hardware vendors.
+  company: Netdev LLC
+  issue_tracker_url: https://gitlab.com/net-dev-net/-/issues
+  license: CC-BY-4.0
+  min_ansible_version: 2.16.9

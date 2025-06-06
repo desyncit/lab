@@ -1,0 +1,42 @@
+---
+- name: Deploying OMSA to Dell hosts
+  when: ansible_os_family == "RedHat"
+  block:
+    - name: Grabbing Bootstrap.cgi
+      ansible.builtin.get_url:
+        url: "{{ hardware_dell_omsa_url }}"
+        dest: "{{ hardware_tmp_dir }}"
+        mode: "0700"
+
+    - name: Execute Bootstrap.cgi
+      ansible.builtin.command:
+        chdir: "{{ hardware_tmp_dir }}"
+        argv:
+          - echo y | ./bootstrap.cgi
+      changed_when: true
+
+    - name: Sync repo cache
+      ansible.builtin.dnf:
+        update_cache: true
+
+    - name: Install and remove omsa packages
+      loop: "{{ hardware_dell_omsa_packages }}"
+      ansible.builtin.package:
+        name: "{{ item.name }}"
+        state: "{{ item.state }}"
+
+    - name: Copy of systemd unit file srvadmin.service
+      ansible.builtin.copy:
+        src: srvadmin.service
+        dest: "{{ systemd_root }}"
+        mode: "0644"
+
+    - name: Force systemd to reread configs
+      ansible.builtin.systemd_service:
+        daemon_reload: true
+
+    - name: Enable and start srvadmin.service
+      ansible.builtin.systemd_service:
+        name: srvadmin.service
+        state: started
+        enabled: true

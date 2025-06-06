@@ -1,0 +1,6 @@
+---
+- name: Including pre-tasks
+  ansible.builtin.include_tasks: pre.yml
+
+- name: Including beaker tasks
+  ansible.builtin.include_tasks: bkr.yml

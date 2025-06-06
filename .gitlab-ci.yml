@@ -1,0 +1,44 @@
+default:
+  tags: [shared-podman]
+  image: 
+
+stages:
+  - syntax
+  - deploy-from-ansible
+
+variables:
+  TAGSET: " "
+  ARGS: " "
+ 
+.ifmanual:
+  rules:
+    - if: $CI_PIPELINE_SOURCE == "push"
+      when: never
+    - if: $ARGS == " " 
+      when: manual
+    - if: $ARGS != " "
+      when: on_success
+
+syntax:
+  stage: syntax
+  extends:
+    - .ifmanual
+  before_script:
+    - echo $PLAYBOOK_PASSKEY > $ANSIBLE_VAULT_PASSWORD_FILE
+    - ansible-vault decrypt $RUNKEY
+  script:
+    - GIT_SSH_COMMAND="ssh -vvv" git clone git@gitlab.com:net-dev-net/lab.git && cd lab/ansible/
+    - ansible-lint --fix 
+
+deploy-from-ansible:
+  stage: deploy-from-ansible
+  extends:
+    - .ifmanual
+  dependencies:
+    - syntax
+  before_script:
+    - echo $PLAYBOOK_PASSKEY > $ANSIBLE_VAULT_PASSWORD_FILE
+    - ansible-vault decrypt $RUNKEY
+  script:
+    - git clone git@gitlab.com:net-dev-net/lab.git && cd lab/ansible/ 
+    - ANSIBLE_DEBUG=1 ansible-playbook main.yml $ARGS $TAGSET

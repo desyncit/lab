@@ -1,0 +1,10 @@
+---
+profile: production
+exclude_paths:
+  - facts.d/
+  - roles/*/meta/
+  - roles/*/tests/
+  - group_vars/all/vault.yml
+skip_list:
+  - fqcn[canonical]
+loop_var_prefix: ^(__|{role}_)

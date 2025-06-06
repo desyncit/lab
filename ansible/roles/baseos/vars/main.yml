@@ -1,0 +1,4 @@
+---
+baseos_rpms:
+  - { name: vim, state: latest }
+  - { name: wget, state: latest }

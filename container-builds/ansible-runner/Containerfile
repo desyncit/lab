@@ -1,0 +1,17 @@
+FROM    docker.io/archlinux/archlinux 
+ENV     PIP_ROOT_USER_ACTION=ignore
+ENV     ANSIBLE_VAULT_PASSWORD_FILE=/tmp/vault/key
+ENV     PATH=${PATH}:/home/arch/.local/bin
+ENV     USER=arch
+RUN      useradd arch
+COPY     --chown=$USER:wheel --chmod=0777 dummy /tmp/auth
+COPY     --chown=$USER:wheel --chmod=0777 dummy /tmp/ks
+COPY     --chown=$USER:wheel --chmod=0777 rc /tmp/rc
+COPY     --chown=$USER:wheel --chmod=0700 profile.d/setup.sh /etc/profile.d/setup.sh
+RUN      bash -x /tmp/rc/root.sh
+USER     arch
+WORKDIR  /home/$USER
+COPY     --chown=$USER:wheel ssh .ssh
+COPY     --chown=$USER:wheel dummy /tmp/vault
+COPY     --chown=$USER:wheel beaker_client .beaker_client
+RUN      bash -x /tmp/rc/user.sh

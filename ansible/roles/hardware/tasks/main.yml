@@ -1,0 +1,5 @@
+---
+- name: Install Dell OMSA
+  ansible.builtin.include_tasks: dell.yml
+  tags: hardware_install_omsa
+  when: ansible_system_vendor == "Dell Inc."

@@ -1,0 +1,7 @@
+---
+- name: Including all
+  ansible.builtin.include_tasks: all.yml
+  tags: [baseos_ssh_keys, baseos_packages]
+  when:
+    - ansible_os_family == "RedHat"
+    - inventory_hostname not in groups['network']

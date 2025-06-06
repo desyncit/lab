@@ -1,0 +1,7 @@
+---
+hardware_tmp_dir: /var/run/tmp
+hardware_dell_omsa_url: https://linux.dell.com/repo/hardware/dsu/bootstrap.cgi
+hardware_dell_omsa_packages:
+  - { name: srvadmin-all, state: present }
+  - { name: srvadmin-webserver, state: present }
+  - { name: srvadmin-tomcat, state: present }

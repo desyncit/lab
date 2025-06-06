@@ -1,0 +1,57 @@
+---
+- name: USER MANAGEMENT
+  when: inventory_hostname not in groups['network']
+  tags: baseos_ssh_keys
+  block:
+    - name: Distributing keys to all nodes
+      ansible.posix.authorized_key:
+        user: "{{ ansible_user }}"
+        state: present
+        key: "{{ lookup('file', 'authorized_keys.keys', split_lines=False) }}"
+        exclusive: true
+
+- name: PACKAGES
+  tags: baseos_packages
+  block:
+    - name: Install additional pkgs
+      ansible.builtin.package:
+        name: "{{ item.name }}"
+        state: "{{ item.state }}"
+      loop: "{{ baseos_rpms }}"
+
+    - name: Updating to release
+      ansible.builtin.dnf:
+        name: "*"
+        state: latest
+        update_only: true
+      register: updated
+
+    - name: Updated.results
+      ansible.builtin.debug:
+        var: updated.results
+
+    - name: Check if kernel was installed
+      when: updated.results is search("kernel")
+      ansible.builtin.reboot:
+        msg: "INFO: Kernel installed rebooting to load new kernel"
+
+    - name: Waiting for response from hosts
+      ansible.builtin.wait_for:
+        host: "{{ inventory_hostname }}"
+        port: 22
+        search_regex: OpenSSH
+        delay: 60
+        timeout: 1200
+
+- name: Include network role
+  ansible.builtin.include_role:
+    name: network
+    tasks_from: hosts.yml
+
+- name: Include Hardware tasks
+  when: hardware_tools is defined
+  ansible.builtin.include_role:
+    name: hardware
+    apply:
+      tags:
+        - hardware_install_omsa
