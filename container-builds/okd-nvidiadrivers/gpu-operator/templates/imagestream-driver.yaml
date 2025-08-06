@@ -1,0 +1,20 @@
+---
+apiVersion: image.openshift.io/v1
+kind: ImageStream
+metadata:
+  name: driver
+  namespace: gpu-operator
+  labels:
+    app.kubernetes.io/instance: gpu-operator
+spec:
+  dockerImageRepository: 'image-registry.openshift-image-registry.svc:5000/gpu-operator/driver'
+  lookupPolicy:
+    local: true
+  tags:
+    - name: 570.169-scos4.18
+      annotations: null
+      generation: 1
+      importPolicy:
+        importMode: Legacy
+      referencePolicy:
+        type: Local

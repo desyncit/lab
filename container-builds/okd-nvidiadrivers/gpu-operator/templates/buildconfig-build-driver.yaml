@@ -1,0 +1,29 @@
+---
+apiVersion: build.openshift.io/v1
+kind: BuildConfig
+metadata:
+  name: build-driver
+  namespace: gpu-operator
+spec:
+  runPolicy: Serial
+  serviceAccount: builder
+  source:
+    contextDir: container-builds/okd-nvidiadrivers/build
+    git:
+      ref: main
+      uri: git@github.com:desyncit/lab.git
+    sourceSecret:
+      name: pull-from-github
+    type: Git
+  strategy:
+    dockerStrategy:
+      noCache: true
+    type: Docker
+  nodeSelector:
+    nvidia.com/gpu.present: "true"
+  output:
+    to:
+      kind: ImageStreamTag
+      name: driver:570.169-scos4.18
+  triggers:
+    - type: ConfigChange
