@@ -1,13 +1,9 @@
 # Stage 1
 FROM nvcr.io/nvidia/cuda:12.9.1-base-ubi9 AS build
-SHELL ["/bin/bash", "-c"]
-
 RUN dnf install -y git wget
 
 # Stage 2
 FROM quay.io/centos/centos:9
-
-LABEL org.opencontainers.image.source https://github.com/TampaDevs/cloud-development-gitops-infra
 ENV TARGETARCH=x86_64
 
 ARG BASE_URL=https://us.download.nvidia.com/XFree86/Linux-x86_64
@@ -23,11 +19,9 @@ ARG DRIVER_TOOLKIT_IMAGE
 ENV DRIVER_TOOLKIT_IMAGE=$DRIVER_TOOLKIT_IMAGE
 
 ENV NVIDIA_VISIBLE_DEVICES=void
-
 ENV PATH="$PATH:/user/local/bin"
 
-SHELL ["/bin/bash", "-c"]
-
+LABEL org.opencontainers.image.source https://gitlab.com/net-dev-net/lab/-/tree/main/container-builds/okd-nvidiadrivers
 RUN dnf makecache 
 RUN dnf install -y kmod util-linux 'dnf-command(download)' 
 RUN dnf install -y patch

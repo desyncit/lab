@@ -1,0 +1,7 @@
+apiVersion: v2
+name: gpu-operator
+description: Chart for the gpu-operator
+type: application
+icon: https://assets.nvidiagrid.net/ngc/logos/GPUoperator.png
+version: v1.0.0
+appVersion: v25.3.0
