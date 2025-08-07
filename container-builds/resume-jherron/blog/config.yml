@@ -1,0 +1,425 @@
+baseURL: "https://jherron.ontampa.dev"
+theme: "terminalcv"
+title: "Blog for Justin Herron"
+
+params:
+  version: "v1.7-8"
+  description: "Terminal Resume for Justin Herron"
+  blog: true
+  prompt:
+    core:
+      text: "du@usersys"
+      color: "white"
+      before: "["
+      beforeColor: "red"
+      after: '\]'
+      afterColor: "red"
+      separator: '-'
+    separator:
+      text: "-"
+      color: white
+    path:
+      before: "["
+      beforeColor: "red"
+      text: "~/"
+      color: "blue"
+      after: '\]'
+      afterColor: "red"
+    extra:
+      text: ": "
+      color: "orange"
+
+  promptColor: grey
+  promptSimbols: ":~$"
+  promptSimbolsColor: grey
+  startxLocation: https://www.linkedin.com/in/desyncit
+  useLess: true
+  listLS: true
+  exitLocation: "about:blank"
+  exitMessage: "[Shutting her down!]"
+  source: true
+  greeting: |
+    På norsk 
+
+    Velkommen til tordendomen, en nettbasert CV for Justin Herron
+    Skriv «hjelp» for en liste over tilgjengelige kommandoer
+
+    English
+
+    Welcome to the Thunderdome! an online resume for Justin Herron
+
+    Type "help" for a list of available commands
+
+    If a terminal is not your thing type startx to load linkedin 
+    resume
+
+  bootsequence: |
+    User request detected
+    Reserving Cloud Resources
+    ...... .. .... ... ... .. ... .. d.. . on... e
+    Cloud Network ready
+    .............................. done
+    Cloud Instance ready (maybe?)
+    .......................
+    Initiating startgate and growing neckbeard
+    boot Arch Linux
+                      -
+                     .o+
+                     ooo/
+                    +oooo
+                   +oooooo
+                  -+oooooo+
+                 /+-+++oooo+
+                /++++/+++++++
+               /++++++++++++++
+              /+++ooooooooooooo/
+            ./ooosssso++osssssso+
+           .oossssso-++++/ossssss+
+          -osssssso.      :ssssssso.
+         +osssssss/        osssso+++.
+        /ossssssss/        +ssssooo/-
+       /ossssso+/:-        --/+osssso+-
+      +sso+:-                   .-/+oso
+     +++.                           +-/+/
+     +.                               +/
+
+    injecting cheat code sequence "up down left right square x triangle"
+    ......................................................................
+    
+    SEQUENCE ACCEPTED starting super ultra mega 10x secured site
+
+    .. ..-. / -.-- --- ..- / ..-. .. --. ..- .-. . -.. / --- ..- - / - .... .. 
+    ... / .-- .- ... / -- --- .-. ... . / -.-. --- -.. . / -.-- --- ..- / .- .-. 
+    . / .-. . .- .-.. .-.. -.-- / ... -- .- .-. -
+
+    Linux 9eab0f3637db 6.15.6-arch1-1 #1 SMP PREEMPT_DYNAMIC Thu, 10 Jul 2025 17:10:18 +0000 x86_64 GNU/Linux
+    Loglevel = shhhhh
+    ......
+    ............
+    ..................
+    ........................
+    ..............................
+    ....................................
+
+    [Stargate]: ready
+    [Neckbeard]: grown
+    [Arch Linux]: ready 
+    [WebServer]: ready
+    [TerminalCV]: ready
+
+    Boot Complete, I HAVE THE POWER!
+  whois:
+    settings:
+      useLess: false
+    details:
+      name: "Justin Herron"
+      profession: "Cloud Architect"
+      location: "Tampa, FL"
+      email: "jherron@net-dev.net"
+      homelink: "https://jherron.ontampa.dev"
+      description: |
+        I like to build, automate and bootstrap Data Centers that 
+        run on open source software. 
+
+        gpg key 0x5293D7F37A9FC00D
+
+  social:
+    settings:
+      useLess: false
+      hideName: false
+    details:
+      - name: "GPG key"
+        url: "https://keys.openpgp.org/vks/v1/by-fingerprint/91D7868CCD4929537CC1B9A15293D7F37A9FC00D"
+      - name: "Linkedin"
+        url: "https://www.linkedin.com/in/desyncit"
+      - name: "Github"
+        url: "https://github.com/desyncit"
+      - name: "Gitlab"
+        url: "https://gitlab.com/desyncit"
+
+  work:
+    settings:
+      useLess: true 
+    details:
+      - jobTitle: Principal Cloud Architect
+        color: red
+        company: "Tampa Devs"
+        location: Tampa, FL
+        date: August 2010 - Present
+        description: |
+          My initial involvement with the nonprofit Tampa Devs began as an attendee at local meetups and technical talks. 
+          After engaging with board members, we collectively came up with the idea to build an open-source community cloud 
+          designed to support local developer projects, technical presentations, meetups, and mentorship programs.
+
+          The first version of the community cloud was deployed on personal server hardware using Libvirt and Ansible, and was launched 
+          in August 2024 for the BayHacks 2024 Hackathon. Where participants were given access to virtual machines on which they could build 
+          and deploy their applications. However, after working closely with both participants and community members, it became clear that version  
+          one of the Tampa Devs Cloud was not well suited for long term community projects.
+
+          This led to the development of version two, which transitioned to using Open Kubernetes Distribution (OpenShift Origin). Ceph was chosen 
+          for distributed storage, while Libvirt continued to host the cluster nodes, all orchestrated through Ansible playbooks. However, the move 
+          to a more scalable infrastructure introduced new challenges specifically the need for additional colocation space and better performance to 
+          support a growing community of over 2,500 members.
+
+          To address these limitations, I engaged with local hosting providers in the Tampa Bay area and secured their support in exchange for promotional 
+          visibility at developer events. This outreach resulted in over $50,000 worth of donated hardware and hosting resources.
+
+          With compute, storage, and network constraints resolved, additional Ansible playbooks were developed to implement a GitOps workflow using ArgoCD, 
+          enabling automated deployment of both infrastructure services and developer applications across the cluster.
+
+      - jobTitle: Engineer - Ceph Storage Team
+        color: red
+        company: "Red Hat"
+        location: Tampa,FL ( Remote )
+        date: Dec 2022 - May 2025
+        description: |
+          -> Supported customers in maintenance and troubleshooting of standalone Ceph™ clusters integrated with 
+          Red Hat OpenShift Container Platform™, ensuring consistent performance and uptime.
+
+          -> Appointed by management to lead a bare-metal lab project, replicating customer environments using Lenovo™, Dell™, 
+          and Supermicro™ chassis to isolate and test complex infrastructure issues.
+
+          -> Coordinated with cross-functional teams to acquire a 100 Gb/s Layer 3 switch and expand Ceph cluster storage by 100 TiB, 
+             enabling production-scale testing across services including RGW (multisite), CephFS, and RBD.
+
+          -> Automated infrastructure deployments using multi-stage Ansible™ playbooks, deploying custom 
+             container images from quay.io via GitLab™ CI/CD pipelines.
+
+          -> Integrated Kerberos authentication and Beaker system automation to manage hardware resources and streamline job submission workflows.
+
+          -> Facilitated identification and escalation of upstream software defects, and provided a collaborative environment for resolving issues 
+             related to both OpenShift Data Foundation (ODF™) and standalone Ceph™ deployments.
+
+      - jobTitle: Principal Network Engineer
+        color: red
+        company: Ace Host
+        location: Tampa,FL and Raleigh, NC 
+        date: Feb 2022 - Aug 2022
+        description: |
+          As the Principal Network Engineer for two data center networks in Tampa,FL and Raleigh, NC. I led strategic 
+          infrastructure initiatives, providing connectivity for over 200 customers.
+
+          such as:
+            I oversaw the recabling of the backhaul infrastructure in Tampa,FL away from Cat 5e to Cat6 FTP, certified 
+            with standard ANSI TIA-568.2-D, which reduced packet latency from 400 ms to sub 100 ms round trip times. 
+
+            I architected and deployed internal and external BGP peering to support route propagation and act as the
+            control plane for EVPN-based VXLAN overlays in production environments, allowing customer servers to be 
+            colocated anywhere in the data center. 
+
+          A key achievement was fully automating the provisioning of bare-metal NVIDIA™ Cumulus Linux switches using Zero 
+          Touch Provisioning (ZTP). This included custom scripts in Bash and Python, with isc-dhcpd configured in a 
+          high-availability pair. Using GitLab™ CI/CD pipelines and leveraging the gitlab api, I was able to incorporate
+          dhcpd options to bootstrap the initial configuration of a switch brought into production with Ansible™.
+
+          I deployed and maintained routed site-to-site VPN tunnels across diverse hardware platforms including Juniper SRX (JunosOS™), 
+          pfSense™ (Dell™), and strongSwan (Debian Linux), supporting secure multi-site control plane workflows.
+
+          I coordinated ASN and IP block procurement from ARIN and managed associated route objects within the Internet Routing Registry (IRR), 
+          ensuring authoritative routing for owned prefixes.
+
+          Additionally, I restored multiple switches with hardware faults (T3048-LY6, LY8, LY9) back into production, 
+          saving the organization roughly $11K–$15K in replacement costs per switch.
+
+          I worked directly with C-level executives and upstream ISP providers to:
+            1. Install single-mode fiber into a 16-channel 100GHz DWDM appliance for high-capacity transport
+            2. Monitor and optimize data center bandwidth using SNMP-fed Grafana™ dashboards
+            3. Lead the procurement and network ownership transfer of a Raleigh, NC data center
+
+
+      - jobTitle: Network Engineering Consultant, Data Center
+        color: red
+        company: Ace Host
+        location: Tampa,FL
+        date: July 2021 - Febuary 2022
+        description: |
+          Contracted by C-Level executive staff to provide technical guidance on data center colocation workflows 
+          and provide design proposal for the Tampa, FL data center BGP Networks.
+
+      - jobTitle: Engineer - Networking Team
+        color: red
+        company: Red Hat    
+        location: Tampa,FL ( Remote )
+        date: Nov 2019 - Jan 2022 
+        description: |
+          Primary responsibilities included packet capture analysis of transport layer protocols and layer three routing data 
+          on Red Hat Enterpise Linux. Additional responsibilities included contributing to the knowledge content service 
+          (KCS) via writen articles.
+
+      - jobTitle: Data Center Technician, Linux systems
+        color: red 
+        company: Hostway Services   
+        location: Tampa,FL
+        date: Sep 2018 - Nov 2019
+        description: |
+          -> Deployed and managed Linux systems (Debian, Centos, Arch, Manjaro, Red Hat, etc).
+          -> Built Openstack Cloud (Stein release) and Ceph storage backend (for cinder exporting to nova) with provided employee rack space. 
+          -> Automated SSL certificate verification with Let's Encrypt and Google Cloud(GCP) APIs.
+
+
+  education:
+    details:
+      - courseName: University of North Dakota - NORW 101 First Year Norwegian I
+        color: blue
+        date: Oct 2022 - May 2023
+        description: | 
+          Introduction to the basic Norwegian language skills for reading, writing, speaking and listening
+          fundamentals of grammar. 
+
+      - courseName: University of North Dakota - NORW 102 First Year Norwegian II
+        color: blue
+        date: Oct 2024 - present
+        description: | 
+          Basic Norwegian language skills; continuation of fundamentals of grammar. 
+
+      - courseName: Hillsborough Community College
+        date: 2017 - 2018
+        color: blue
+        description: |
+          Computer Systems Networking and Telecommunications
+
+      - courseName: Cisco Networking Academy
+        color: blue
+        date: 2017 - 2018
+        description: | 
+          Earned CCENT certification
+           
+  skills:
+    settings:
+      useLess: true
+    details:
+      - name: Linux
+        color: green
+        percentage: 100
+        description: |
+          I have a deep understanding of Linux
+
+      - name: Data Center Networking
+        color: green
+        percentage: 100
+        description: | 
+          As described in the below RFCs published by the IETF
+          -> Core Networking Foundations
+               RFC 792 (ICMP) - Essential for network troubleshooting and diagnostics in data centers
+               RFC 826 (ARP) - Address resolution, crucial for L2/L3 boundaries
+               RFC 1918 (Private Address Space) - Fundamental for data center IP addressing schemes
+
+          -> Layer 2 Extensions
+               RFC 7348 (VXLAN) - Virtual Extensible LAN, fundamental for DC network virtualization
+               RFC 4364 (BGP/MPLS IP VPNs) - Important for multi-tenancy and segmentation
+               RFC 7432 (BGP MPLS-Based Ethernet VPN - EVPN) - Modern approach to L2/L3 VPN services
+
+          -> Routing and Switching
+               RFC 4271 A Border Gateway Protocol 4
+               RFC 7938 Use of BGP for Routing in Large-Scale Data Centers
+               RFC 8365 A Network Virtualization Overlay Solution Using Ethernet VPN (EVPN)
+               RFC 8950 Advertising IPv4 Network Layer Reachability Information (NLRI) with an IPv6 Next Hop
+
+          -> TCP (Transmission Control Protocol)
+               RFC 793 - Transmission Control Protocol
+               RFC 1122 - Requirements for Internet Hosts
+               RFC 5681 - TCP Congestion Control
+               RFC 6093 - On the Implementation of the TCP Urgent Mechanism 
+               RFC 7323 - TCP Extensions for High Performance
+
+          -> UDP (User Datagram Protocol)
+               RFC 768 - User Datagram Protocol
+               RFC 8085 - UDP Usage Guideline
+
+      - name: automation
+        color: green
+        percentage: 99.9999
+        description: | 
+          using tools like bash and cron jobs for key rotations
+          Ansible for system provisioning and virtual machine deployments
+          PXE and kickstart for host level provisioning
+
+  softskills:
+    # settings:
+    #   useLess: true
+    details:
+      - name: Flexibility
+        color: purple
+        percentage: 80
+
+      - name: Teamwork
+        color: purple
+        percentage: 90
+        description: because it makes the dream work!
+
+  languages:
+    settings:
+      useLess: false
+    details:
+      - name: English
+        color: Blue
+        percentage: 100
+        description: native speaker
+
+      - name: Bokmål, Norwegian
+        percentage: 60
+        description: |
+          Jeg snakke norsk som et barn, fordi jeg ikke øver så 
+          mye some jeg burde. Men jeg kan leser og skriver norsk. 
+
+  projects:
+    settings:
+      useLess: false
+    details:
+      - title: Tampa Devs Cloud
+        color: blue
+        date: since May 2025
+        link: cloud.ontampa.dev
+        description: |
+          Project Publications
+          1. Tampa Devs Public Cloud Project Seeks To Level The Playing Field
+             https://www.tampadevs.com/blog/2024/20240819-the-public-cloud-project
+          2. Powered by Community! A Thank You to Our Sponsors Ace Host & xByte!
+             https://www.tampadevs.com/blog/2025/20250729-cloud-project-thank-you-to-our-sponsors
+
+  certifications:
+    settings:
+      useLess: true
+    details:
+      - certName: NVIDIA Certified Professional - Cumulus
+        badge: https://www.credly.com/earner/earned/badge/4dda39ae-37d7-4c17-b467-19fc1f72c791
+      - certName: Red Hat Certified Architect in Infrastructure
+        badge: https://www.credly.com/badges/ad66fb4b-2640-4261-b474-db3fab089323
+
+  misc:
+    settings:
+      useLess: false
+    commandName: 'articles'
+    title: "knowledge base articles I have written"
+    titleColor: teal
+    content: |
+
+      - title: 'Ceph - src/cls/rgw/cls_rgw.cc:2531: ERROR: rgw_obj_remove: cls_cxx_remove returned -2'
+        publisher: Red Hat 
+        url: https://access.redhat.com/solutions/7096902
+
+      - title: 'Ceph reports "<N> hosts fail cephadm check"'
+        publisher: Red Hat
+        url: https://access.redhat.com/solutions/7096514
+
+      - title: 'Rados object gateway S3 multisite objects are listed but inaccessible with archive zone.'
+        publisher: Red Hat
+        url: https://access.redhat.com/solutions/7096468
+
+      - title: 'Keepalived is losing VIP upon "nmcli con up <con-name>" and failover does not occur'
+        publisher: Red Hat
+        url: https://access.redhat.com/solutions/5528961
+
+      - title: 'Reloading firewall-cmd fails due to libjansson.so.4 not found'
+        publisher: Red Hat                               
+        url: https://access.redhat.com/solutions/5716181
+
+      - title: 'Firewalld direct rules result in wrong ordering.'
+        publisher: Red Hat
+        url: https://access.redhat.com/solutions/5897981
+
+      - title: 'How to provide rados block storage to libvirt?'
+        publisher: Red Hat
+        url: https://access.redhat.com/solutions/7096204
+
+    contentColor: white
