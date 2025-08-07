@@ -1,6 +1,9 @@
 FROM quay.io/lib/archlinux
 RUN pacman -Sy hugo --noconfirm
-RUN useradd -m hugo && mkdir /srv/blog
+RUN useradd -m hugo && \
+    mkdir /srv/blog && \
+    chgrp -R 0 /srv/blog && \
+    chmod -R g=u /srv/blog
 COPY blog/ /srv/blog
 RUN chown hugo -R /srv/blog
 USER hugo
