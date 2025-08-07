@@ -46,7 +46,7 @@ params:
 
     English
 
-    Welcome to the Thunderdome! an online resume for Justin Herron
+    Welcome to the Thunderdome, an online resume for Justin Herron
 
     Type "help" for a list of available commands
 
@@ -56,13 +56,13 @@ params:
   bootsequence: |
     User request detected
     Reserving Cloud Resources
-    ...... .. .... ... ... .. ... .. d.. . on... e
+    ...... .. .... ... ... .. ... .. done
     Cloud Network ready
     .............................. done
     Cloud Instance ready (maybe?)
     .......................
     Initiating startgate and growing neckbeard
-    boot Arch Linux
+    boot: Arch Linux
                       -
                      .o+
                      ooo/
@@ -139,7 +139,7 @@ params:
 
   work:
     settings:
-      useLess: true 
+      useLess: true
     details:
       - jobTitle: Principal Cloud Architect
         color: red
@@ -260,33 +260,33 @@ params:
   education:
     details:
       - courseName: University of North Dakota - NORW 101 First Year Norwegian I
-        color: blue
+        color: teal
         date: Oct 2022 - May 2023
         description: | 
           Introduction to the basic Norwegian language skills for reading, writing, speaking and listening
           fundamentals of grammar. 
 
       - courseName: University of North Dakota - NORW 102 First Year Norwegian II
-        color: blue
+        color: teal
         date: Oct 2024 - present
         description: | 
           Basic Norwegian language skills; continuation of fundamentals of grammar. 
 
       - courseName: Hillsborough Community College
         date: 2017 - 2018
-        color: blue
+        color: teal
         description: |
           Computer Systems Networking and Telecommunications
 
       - courseName: Cisco Networking Academy
-        color: blue
+        color: teal
         date: 2017 - 2018
         description: | 
           Earned CCENT certification
            
   skills:
     settings:
-      useLess: true
+      useLess: false
     details:
       - name: Linux
         color: green
@@ -335,8 +335,8 @@ params:
           PXE and kickstart for host level provisioning
 
   softskills:
-    # settings:
-    #   useLess: true
+    settings:
+      useLess: false
     details:
       - name: Flexibility
         color: purple
@@ -367,19 +367,20 @@ params:
       useLess: false
     details:
       - title: Tampa Devs Cloud
-        color: blue
+        color: white
         date: since May 2025
         link: cloud.ontampa.dev
         description: |
           Project Publications
           1. Tampa Devs Public Cloud Project Seeks To Level The Playing Field
              https://www.tampadevs.com/blog/2024/20240819-the-public-cloud-project
+
           2. Powered by Community! A Thank You to Our Sponsors Ace Host & xByte!
              https://www.tampadevs.com/blog/2025/20250729-cloud-project-thank-you-to-our-sponsors
 
   certifications:
     settings:
-      useLess: true
+      useLess: false
     details:
       - certName: NVIDIA Certified Professional - Cumulus
         badge: https://www.credly.com/earner/earned/badge/4dda39ae-37d7-4c17-b467-19fc1f72c791
