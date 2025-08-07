@@ -8,4 +8,4 @@ COPY blog/ /srv/blog
 RUN chown hugo -R /srv/blog
 USER hugo
 WORKDIR /srv/blog
-ENTRYPOINT ["/bin/sh", "-c","hugo server --baseURL=http://blog-jherron.ontampa-dev-jherron.svc.cluster.local -e Production"]
+ENTRYPOINT ["/bin/sh", "-c","hugo server --bind 0.0.0.0 --baseURL http://$HOSTNAME -e Production"]
