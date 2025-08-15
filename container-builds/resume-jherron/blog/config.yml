@@ -366,6 +366,14 @@ params:
     settings:
       useLess: false
     details:
+      - title: Gitlab/Container builds
+        color: white
+        link: https://gitlab.com/net-dev-net/lab/-/tree/main/container-builds
+        description: |
+          Repository that contains the source code for this blog and mirrors
+          to github.It also contains source code for other container
+          builds hosted on the Tampa Devs Cloud.
+
       - title: Tampa Devs Cloud
         color: white
         date: since May 2025
@@ -391,7 +399,7 @@ params:
     settings:
       useLess: false
     commandName: 'articles'
-    title: "knowledge base articles I have written"
+    title: "Publications hosted in Red Hat's Knowledge Centered Support(KCS) system I have written."
     titleColor: teal
     content: |
 
