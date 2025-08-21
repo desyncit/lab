@@ -1,0 +1,10 @@
+---
+service_type: grafana
+service_name: grafana
+placement:
+  label: 
+spec:
+  port: 3000
+  initial_admin_password: {{ ansble_ssh_password }}
+  anonymous_access: false
+  protocol: https

@@ -1,0 +1,33 @@
+{% for h in storage_haproxy_groups | dict2items | subelements('value') %}
+
+{{ h.0.key }} {{ h.1.name }}
+{% if h.0.key == 'frontend' -%}
+{% if storage_rgw_tls_state == false or h.1.mode == tcp %}
+  mode {{ h.1.mode }}
+{% for vip in storage_rgw_ingress_ips %}
+  bind {{ vip }}:{{ h.1.port }} 
+{% endfor %}
+{% endif %}
+{% if storage_rgw_tls_state == 'true' and h.1.mode == 'http' %}
+  mode {{ h.1.mode }}
+  http-request redirect scheme https unless { ssl_fc }
+{% endif %}
+{% if h.1.name == 'registry' %}
+  http-request auth unless { http_auth(registryauth) }
+{% endif %}
+  default_backend {{ h.1.default_backend }}
+{% endif %}
+{% if h.0.key == 'backend' %}
+  mode {{ h.1.mode }}
+  balance {{ h.1.balance }}
+{% if h.1.name == "registry-api" %}
+  server local-registry 127.0.0.1:{{ h.1.port }} check 
+{% endif %}
+{% if h.1.name != "registry-api" %}
+{% for server in groups['domains'] | sort %}
+  server {{ server }}-{{ h.1.tag }} {{ hostvars[server]['v4'] }}:{{ h.1.port }} {{ h.1.server_opts }} 
+{% endfor %}
+{% endif %}
+{% endif %}
+{% endfor %}
+

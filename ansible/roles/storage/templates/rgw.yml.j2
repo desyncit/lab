@@ -1,0 +1,21 @@
+---
+service_type: rgw
+service_id: {{ storage_rgw_realm }}
+service_name: rgw.{{ storage_rgw_realm }}
+placement:
+  label: rgw
+spec:
+  rgw_frontend_extra_args:
+{% for arg in storage_rgw_extra_args %}
+   - {{ arg.name }}={{ arg.value }}
+{% endfor %}
+  rgw_frontend_port: {{ storage_rgw_port }}
+  rgw_realm: {{ storage_rgw_realm }}
+  rgw_zonegroup: {{ storage_rgw_zonegroup }}
+  rgw_zone: {{ storage_rgw_zone }}
+  ssl: {{ storage_rgw_tls_state }}
+{% if storage_rgw_tls_state == 'true' %}
+  rgw_frontend_ssl_certificate: |
+   {% include storage_rgw_tls_privkey %}
+   {% include storage_rgw_tls_fullchain %}
+{% endif %}
