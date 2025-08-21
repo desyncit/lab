@@ -1,0 +1,21 @@
+---
+service_type: ingress
+service_id: rgw.{{ storage_rgw_realm }}
+service_name: ingress.rgw.{{ storage_rgw_realm }}
+placement:
+  label: rgw
+spec:
+  backend_service: rgw.{{ storage_rgw_realm }}
+  first_virtual_router_id: 50
+  frontend_port: {{ storage_rgw_ingress_port }}
+  health_check_interval: 1s
+  monitor_port: 1967
+  virtual_ips_list:
+{% for vip in storage_rgw_ingress_ips %}
+  - {{ vip }}
+{% endfor %}
+{% if storage_rgw_tls_state == 'true' %}
+  ssl_cert: |
+    {% include storage_rgw_tls_privkey   %}
+    {% include storage_rgw_tls_fullchain %}
+{% endif %}

@@ -1,0 +1,78 @@
+---
+- name: BOOTSTRAP CEPH CLUSTER
+  block:
+
+    - name: Include vars from role network
+      ansible.builtin.include_role:
+        name: network
+        vars_from: main
+
+    - name: Intalling needed python bindings
+      ansible.builtin.package:
+        name:
+          - "{{ item }}"
+        loop:
+          - python3-netaddr
+
+    - name: Install collections
+      community.general.ansible_galaxy_install:
+        type: collection
+        name: "{{ item }}"
+      loop:
+        - ceph.automation
+        - ansible.utils
+
+    - name: Grabbing cephadm for cluster bootstrap
+      ansible.builtin.get_url:
+        url: "{{ storage_cephadm_url }}"
+        dest: "{{ storage_cephadm_path }}"
+        mode: "700"
+      register: __getcephadm
+
+    - name: Show return
+      ansible.builtin.debug:
+        var: __getcephadm
+
+    - name: Add ceph repos to admin only
+      when:
+        - inventory_hostname in groups['_admin']
+      changed_when: true
+      ansible.builtin.command:
+        argv:
+          - "{{ storage_cephadm_path }}"
+          - add-repo
+          - --release
+          - "{{ storage_ceph_release }}"
+
+    - name: Install ceph-common on admin nodes
+      when: 
+        - inventory_hostname in groups['_admin']
+      ansible.builtin.package:
+        name:
+          - ceph-common
+
+    - name: Setting ceph public monitor ip for bootstrap
+      when: 
+        - ansible_default_ipv4.address | ansible.utils.ipaddr('10.150.0.0/24')
+      ansible.builtin.set_fact:
+        storage_public_monitor_ip: "{{ ansible_default_ipv4.address }}"
+
+    - name: Creating initial cluster spec file
+      ansible.builtin.template:
+        src: "{{ item + '.j2' }}"
+        dest: "{{ storage_path_services + item }}"
+      loop:
+        - initial-cluster-config.yml
+
+    - name: Pulling up cluster by the bootstraps
+      ceph.automation.cephadm_bootstrap:
+        ssh_private_key: "{{ storage_ssh_key_private }}"
+        ssh_public_key: "{{ storage_ssh_key_access }}"
+        output_dir: "{{ storage_ceph_path_root }}"
+        mon_ip: "{{ storage_public_monitor_ip }}"
+        cluster_network: "{{ storage_cluster_net }}"
+        skip_firewalld: true
+        skip_dashboard: true
+        apply_spec: "{{ storage_path_services + item }}" 
+      loop:
+        - initial-cluster-config.yml

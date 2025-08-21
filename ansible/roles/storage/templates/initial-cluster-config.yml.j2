@@ -1,0 +1,39 @@
+{%- for host in groups['storage'] %}
+{%- set d = [] -%}
+---
+service_type: host
+addr: {{ hostvars[host]['ansible_default_ipv4']['address']  | ansible.utils.ipv4('10.150.0.0/24') }}
+hostname: {{ host }}
+labels:
+{% for group in hostvars[host]['group_names']  | select('in', ['mgr', 'mon', '_admin', 'rgw', 'osd'])  %}
+  - {{ group }}
+{% endfor %}
+{%- for dev in hostvars[host].ansible_facts.devices.values() if dev.model is not none -%}
+{%-   if 'xxxxx' in dev.model -%}
+{%-  set _ = d.append('vendor') -%}
+{%   endif -%}
+{% endfor -%}
+{% for dlabel in d | unique %}
+  - {{ dlabel }}
+{% endfor %}
+{% endfor -%}
+---
+service_type: mon
+placement:
+  label: mon
+---
+service_type: mgr
+placement:
+  label: mgr
+{% for s in storage_osd_spec %}
+---
+service_type: osd
+service_id: {{ s.name }}_drive_group
+placement:
+  label: {{ s.label }}
+crush_device_class: {{ s.crush_device_class }}
+spec: 
+  data_devices:
+    model: {{ s.model }}
+    rotational: {{ s.rotational }}
+{% endfor %}
