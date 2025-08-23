@@ -1,0 +1,57 @@
+graph Storage {
+  rankdir=LR;
+
+  node [shape=record, style=filled, fontname="Arial", labeljust="l"];
+  edge [fontname="Arial", labeljust="l"];
+
+  subgraph main {
+        _checks [
+             nojustify=false 
+             label="
+                 <f0>- inventory_hostname in groups['_admin']\l&nbsp; 
+                |<f1>- deploy_ceph is defined\l&nbsp; 
+                |<f2>- deploy_svcs is defined\l&nbsp;
+                |<f3>- update_proxy is defined\l&nbsp;"
+        ];
+        deploy [
+            nojustify=false
+            label="
+               <f0>- name: Deploy Ceph\l&nbsp; 
+                     run_once: True\l 
+               |<f1>&nbsp; when\l
+               |<f2>&nbsp; ansible.builtin.include_tasks: bootstrap.yml\l
+                    &nbsp; args:\l
+                    &nbsp; &nbsp; &nbsp; apply:\l
+                    &nbsp; &nbsp; &nbsp; &nbsp; delegate_to: lb01\l"
+        ];    
+        svc_modules [
+            nojustify=false
+            label="
+               <f0>- name: Deploy ceph services and modules\l&nbsp; 
+                     run_once: True\l 
+               |<f1>&nbsp; when\l 
+               |<f2>&nbsp; ansible.builtin.include_tasks: services.yml\l 
+                    &nbsp; args:\l &nbsp; &nbsp; 
+                    &nbsp; apply:\l
+                    &nbsp; &nbsp; &nbsp; &nbsp; delegate_to: lb01\l"
+        ];   
+        update_proxy [
+            nojustify=false
+            label="
+                <f0>- name: Update proxy\l&nbsp; 
+                      run_once: True\l 
+                |<f1>&nbsp; when\l 
+                |<f2>&nbsp; ansible.builtin.include_tasks: services.yml\l 
+                     &nbsp; args:\l
+                     &nbsp; &nbsp; &nbsp; apply:\l
+                     &nbsp; &nbsp; &nbsp; &nbsp; delegate_to: lb01\l"
+        ];
+            
+    }
+    subgraph bootstrap {
+  
+    }
+    deploy:f1 -- _checks:f0
+    deploy:f1 -- _checks:f1
+    svc_modules:f1 -- _checks:f2    
+ }
