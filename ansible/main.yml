@@ -1,35 +1,46 @@
 ---
 - name: Main playbook
+  any_errors_fatal: true
   hosts: "{{ host | default('all:!out') }}"
-  gather_facts: true
-  gather_subset:
-    - os_family
-    - hardware
 
   tasks:
 
     - name: Provision the bare metal chassis.
       when:
+        - inventory_hostname not in groups['network']
         - beaker_provision is defined
         - release is defined
-        - inventory_hostname not in groups['network']
       block:
         - name: Bootstraping the baremetal
           ansible.builtin.include_role:
             name: beaker
 
-    - name: Configure Network bridge switch
-      when: network_provision is defined
+    - name: External Network provisioning
+      when: 
+        - network_provision is defined
       block:
         - name: Configuring bridge between cluster nodes
-          tags: network_backup_switch_config
+          when:
+            - network_backup_switch_config is defined
           ansible.builtin.include_role:
             name: network
 
-    - name: Provision the BaseOS.
-      when: baseos_provision is defined
+    - name: Downstream Servers
+      when: 
+        - baseos_provision is defined
       block:
         - name: Deploying base configurations
-          tags: [baseos_ssh_keys, baseos_packages]
+          when:
+            - init_base is defined
           ansible.builtin.include_role:
             name: baseos
+
+    - name: Cloud Environment deployment
+      block:
+
+      - name: Cloud or Domain Deployment
+        when:
+          - ( update_coreos is defined or
+              deploy_domain is defined  )
+        ansible.builtin.include_role:
+          name: cloud

@@ -1,0 +1,20 @@
+---
+- name: Update sources to deploy cloud
+  run_once: True
+  when:
+    - update_coreos is defined
+  ansible.builtin.include_tasks: src.yml
+  args:
+    apply:
+      delegate_to: lb01
+
+- name: Include deploy virtual machine
+  when:
+    - deploy_domain is defined
+    - cloud_deploy_type != None
+    - cloud_deploy_domain != None
+    - cloud_deploy_hypervisor != None
+  ansible.builtin.include_role:
+    name: machines
+    tasks_from: compute-domain.yml
+    vars_from: main

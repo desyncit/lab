@@ -1,0 +1,125 @@
+---
+- name: Incuding role vault
+  ansible.builtin.include_vars:
+    file: vault.yml
+
+- name: S3 Operations
+  block:
+
+    - name: Include storage vars
+      ansible.builtin.include_vars:
+        file: ../../storage/vars/main.yml
+
+    - name: Installing dependant rpms
+      ansible.builtin.package:
+        name:
+          - python3-boto3
+          - python3-botocore
+        state: latest
+          
+    - name: S3 user handler
+      ceph.automation.radosgw_user:
+        name: "{{ item.name }}"
+        state: "{{ item.state }}"
+        display_name: "{{ item.display_name }}"
+        access_key: "{{ item.access_key }}"
+        secret_key: "{{ item.secret_key }}"
+        realm: "{{ storage_rgw_realm }}"
+        zonegroup: "{{ storage_rgw_zonegroup }}"
+        zone: "{{ storage_rgw_zone }}"
+        admin: "{{ item.is_admin }}"
+      loop: "{{ cloud_rgw_users }}"
+      no_log: true
+
+    - name: Nuke staging directory
+      ansible.builtin.file:
+        path: "{{ item }}"
+        state: absent
+      loop:
+        - "{{ cloud_local_path }}"
+
+    - name: Create staging directory
+      ansible.builtin.file:
+        path: "{{ item }}"
+        state: directory
+        seuser: system_u
+        serole: object_r
+        setype: tmp_t
+        selevel: s0
+      loop:
+        - "{{ cloud_local_path_okd }}"
+        - "{{ cloud_local_path_ign }}"
+
+    - name: Getting upstream coreos sources
+      ansible.builtin.get_url:
+        url: "{{ item }}"
+        dest: "{{ cloud_local_path_coreos }}"
+        seuser: system_u
+        serole: object_r
+        setype: tmp_t
+        selevel: s0
+      loop:
+        - "{{ cloud_upstream_rootfs }}"
+        - "{{ cloud_upstream_kernel }}"
+        - "{{ cloud_upstream_initramfs }}"
+        - "{{ cloud_upstream_iso }}"
+
+    - name: Grabbing install files
+      ansible.builtin.unarchive:
+        src: "{{ item }}"
+        dest: /usr/local/bin/
+        remote_src: yes  
+      loop:
+        - "{{ cloud_config_client }}"
+        - "{{ cloud_config_install }}"
+
+    - name: Generate install-config.yml
+      ansible.builtin.template:
+        src: roles/cloud/templates/install-config.yaml.j2
+        dest: "{{ cloud_local_path_ign + 'install-config.yaml' }}"
+
+    - name: Generate manifests
+      ansible.builtin.command: >-
+        /usr/local/bin/openshift-install create manifests --dir={{ cloud_local_path_ign }}
+
+    - name: No workers on control plane 
+      ansible.builtin.replace:
+        path: "{{ cloud_local_path_ign + item }}"
+        regexp: "  mastersSchedulable: true"
+        replace: "  mastersSchedulable: false"
+      loop:
+        - manifests/cluster-scheduler-02-config.yml
+
+    - name: Generate ignition configs
+      ansible.builtin.command: >-
+        /usr/local/bin/openshift-install create ignition-configs --dir={{ cloud_local_path_ign }}
+
+    - name: List and register 
+      ansible.builtin.find:
+        paths: "{{ cloud_local_path }}"
+        file_type: file
+        recurse: yes
+      register: __cloud_return_fpath
+ 
+    - name: Uploading files to S3 object gateway
+      amazon.aws.s3_object:
+        mode: put
+        bucket: "{{ cloud_local_bucket }}"
+        object: "{{ item.path | replace(cloud_local_froot + 'okd/','',1) }}"
+        src: "{{ item.path }}"
+        ceph: true
+        encrypt: False
+        permission: "public-read"
+        access_key: "{{ cloud_rgw_default_key_access }}"
+        secret_key: "{{ cloud_rgw_default_key_secret }}"
+        endpoint_url: "{{ cloud_local_endpoint }}"
+      loop: "{{ __cloud_return_fpath.files }}"
+      loop_control:
+        label: "Uploading {{ item.path | basename }} to {{ cloud_local_endpoint }}"
+
+    - name: Cleaning up rpms    
+      ansible.builtin.package:
+        name:  
+         - python3-boto3
+         - python3-botocore
+        state: absent

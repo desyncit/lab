@@ -1,0 +1,35 @@
+---
+apiVersion: v1
+baseDomain: {{ cloud_domain_base }}
+compute:
+- hyperthreading: Enabled
+  name: worker
+  replicas: 1
+controlPlane:
+  hyperthreading: Enabled
+  name: master
+  replicas: 3
+metadata:
+  name: {{ cloud_config_cname }}
+networking:
+  clusterNetwork:
+  - cidr: {{ cloud_network_cluster }}
+    hostPrefix: {{ cloud_network_cluster_hostprefix }} 
+  machineNetwork:
+  - cidr: {{ cloud_network_machine }}
+  networkType: OVNKubernetes
+  serviceNetwork:
+  - {{ cloud_network_service }}
+platform:
+  none: {}
+capabilities:
+  baselineCapabilitySet: None
+  additionalEnabledCapabilities:
+{% for cap in cloud_config_additionalenabledcapabilities %}
+{%   if cap.include | default(false) %}
+  - {{ cap.name }}
+{%   endif %}
+{% endfor %}
+publish: External
+pullSecret: {{ cloud_config_pullsecret }}
+sshKey: {{ cloud_config_sshpubkey }}

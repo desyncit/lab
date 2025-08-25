@@ -1,0 +1,92 @@
+---
+# networks def start networks not seen on the machine network
+cloud_network_cluster_hostprefix: {{ replace-me }}
+cloud_network_cluster: '{{ replace-me }}'
+cloud_network_service: '{{ replace-me }}'
+cloud_network_machine: '{{ replace-me }}'
+
+# DNS names  holds the S3 endpoint and DNS for cloud
+cloud_domain_base: "{{ replace-me }}"
+cloud_domain_cluster: "{{ 'replace-me.' + cloud_domain_base }}"
+cloud_domain_utility: "{{ 'utility.' + cloud_domain_base }}"
+cloud_domain_buildhost: "{{ query('community.general.dig', cloud_domain_utility ) | first }}"
+
+# deployment dependencies
+cloud_config_cname: '{{ replace-me }}'
+cloud_config_release: '4.15.0-0.okd-2024-03-10-010116'
+cloud_coreos_release: '39.20240225.3.0'
+
+cloud_config_download: "{{ 'https://github.com/okd-project/okd/releases/download/' + cloud_config_release }}"
+cloud_config_client: "{{ cloud_config_download + '/openshift-client-linux-' + cloud_config_release + '.tar.gz' }}"
+cloud_config_install: "{{ cloud_config_download + '/openshift-install-linux-' + cloud_config_release + '.tar.gz' }}"
+
+cloud_config_sshpubkey: "{{ replace-me }}"
+# upstream https://builds.coreos.fedoraproject.org/browser?stream=stable&arch=x86_64
+# Grab the updated binaries from upstream
+cloud_upstream: 'https://builds.coreos.fedoraproject.org/prod/streams/stable/builds/'
+cloud_upstream_url: "{{ cloud_upstream + cloud_coreos_release + '/x86_64/' }}"
+cloud_upstream_iso: "{{ cloud_upstream_url + 'fedora-coreos-' + cloud_coreos_release + '-live.x86_64.iso' }}"
+cloud_upstream_rootfs: "{{ cloud_upstream_url + 'fedora-coreos-' + cloud_coreos_release + '-live-rootfs.x86_64.img' }}"
+cloud_upstream_kernel: "{{ cloud_upstream_url + 'fedora-coreos-' + cloud_coreos_release + '-live-kernel-x86_64' }}"
+cloud_upstream_initramfs: "{{ cloud_upstream_url + 'fedora-coreos-' + cloud_coreos_release + '-live-initramfs.x86_64.img'}}"
+
+# local S3 endpoint
+cloud_local_froot: '/var/tmp/'
+cloud_local_bucket: 'okd'
+
+cloud_local_path: "{{ cloud_local_froot + cloud_local_bucket }}"                       # /var/tmp/okd/
+cloud_local_path_ign: "{{ cloud_local_path + '/ignition/' }}"                          # /var/tmp/okd/ignition/
+cloud_local_path_install: "{{ cloud_local_path + '/install/' }}"                       # /var/tmp/okd/install/
+cloud_local_path_coreos: "{{ cloud_local_path + '/coreos/' + cloud_coreos_release }}"  # /var/tmp/okd/coreos/39.20240225.3.0
+cloud_local_path_okd: "{{ cloud_local_path_coreos  + '/' + cloud_config_release }}"    # /var/tmp/okd/coreos/39.20240225.3.0/4.15.0-0.okd-2024-03-10-010116
+
+
+cloud_local_endpoint: "{{ 'http://' + storage_rgw_endpoint + ':' + storage_rgw_port }}"
+cloud_local_url: "{{ 'http://' + cloud_domain_buildhost + ':' + storage_rgw_port + '/' + cloud_local_bucket + '/' }}"
+
+cloud_local_ignition: "{{ 'coreos.inst.ignition_url=' + cloud_local_url + 'ignition/' + cloud_deploy_type + '.ign' }}"
+cloud_local_kernel: "{{ cloud_local_url + 'coreos/' + cloud_coreos_release + '/fedora-coreos-' + cloud_coreos_release + '-live-kernel-x86_64' }}"
+cloud_local_rootfs: "{{ cloud_local_url + 'coreos/' + cloud_coreos_release + '/fedora-coreos-' + cloud_coreos_release + '-live-rootfs.x86_64.img' }}"
+cloud_local_initramfs: "{{ cloud_local_url + 'coreos/' + cloud_coreos_release + '/fedora-coreos-' + cloud_coreos_release + '-live-initramfs.x86_64.img' }}"
+
+cloud_deploy_type: 'None'
+cloud_deploy_role: "{{ cloud_deploy_type }}"
+cloud_deploy_domain: 'None'
+cloud_deploy_hypervisor: 'None'
+
+cloud_deploy_vcpu: "16"
+cloud_deploy_ram: "64768"
+cloud_deploy_boot: "hd,network"
+cloud_deploy_network: "network=default"
+cloud_deploy_disk: "vol=default/{{ cloud_deploy_domain }},format=raw"
+cloud_deploy_addr: "{{ hostvars[cloud_deploy_domain]['v4'] }}::{{ gateway }}:{{ mask }}" 
+cloud_deploy_named: "nameserver=1.1.1.1"
+cloud_deploy_ipinfo: "ip={{ cloud_deploy_addr }}:{{ cloud_deploy_domain + '.' + cloud_domain_cluster }}:enp1s0:none {{ cloud_deploy_named }}"
+cloud_deploy_kargs: "coreos.live.rootfs_url={{ cloud_local_rootfs }} rd.neednet=1 coreos.inst.install_dev=/dev/vda"
+cloud_deploy_kern: "kernel={{ cloud_local_kernel }},initrd={{ cloud_local_initramfs }},kernel_args_overwrite=yes"
+
+cloud_config_additionalenabledcapabilities:
+  - name: Build
+    include: true
+  - name: CSISnapshot
+    include: true
+  - name: CloudCredential
+    include: true
+  - name: Console
+    include: true
+  - name: DeploymentConfig
+    include: true
+  - name: ImageRegistry
+    include: true
+  - name: MachineAPI
+    include: true
+  - name: NodeTuning
+    include: true
+  - name: OperatorLifecycleManager
+    include: true
+  - name: Storage
+    include: true
+  - name: baremetal
+    include: true
+  - name: marketplace
+    include: true
