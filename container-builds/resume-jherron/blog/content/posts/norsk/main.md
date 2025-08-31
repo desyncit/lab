@@ -10,10 +10,10 @@ description = "Jeg studerer norsk ved Universitetet i Nord Dakota på nette. For
 
 Hei, jeg heter Justin og jeg bor i Tampa,FL, USA. Men jeg studerer norsk ved universitetet i Nord-Dakota, USA. 
 
+---
+
 TOC
 - [Ordbok](./ord.md)
-
-
-
-
-
+  - Kapitler
+    - [Kapital: 16](./seksten.md)
+    - [Kapital: 17](./sytten.md)
