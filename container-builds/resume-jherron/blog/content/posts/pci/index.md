@@ -1,17 +1,9 @@
-<<<<<<< HEAD:container-builds/resume-jherron/blog/content/posts/pci/pci-bar.md
-title = "PCI Bus"
-date = "2025-08-11"
-category = "Protocols"
-author = ""
-description = ""
-=======
 +++
 title = "PCI Bus"
 date = "2025-08-11"
-category = "protocols"
+category = "Protocols"
 author = "desyncit"
 description = "As pci devices become more and more prevalent, this log is a notebook on how data moves across the bus"
->>>>>>> b800700 (big update to overal structure):container-builds/resume-jherron/blog/content/posts/pci/index.md
 +++
 
 ### What is PCIe and why should I care?
@@ -79,7 +71,7 @@ When you read or write to offsets within the BAR region, TLP
                             |            |>----->| BAR1 |>----->| BAR1 region |
                             |            |       +------+       +-------------+
                             |            |               
-                                                             |            |               
+                            |            |               
                             |            |       +------+       +-------------+
                             |            |>----->| BAR5 |>----->| BAR5 region |
                             +------------+       +------+       +-------------+
