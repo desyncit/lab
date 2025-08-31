@@ -1,9 +1,8 @@
-+++
-title = "PCI Bus  "
+title = "PCI Bus"
 date = "2025-08-11"
-category = "Norsk"
-author = "Justin Herron ( desyncit )"
-description = "As pci devices become more and more prevalent, this log is a notebook on how data moves across the bus"
+category = "Protocols"
+author = ""
+description = ""
 +++
 
 ### What is PCIe and why should I care?
@@ -22,12 +21,6 @@ hierarchy deliver the packet to the proper ports using routing information withi
 
 The root of the PCI tree is known as the __Root Complex__ (abbreviated as RC) and is the sole owner of all things PCIe on the system. It is
 located physically on the CPU sillicon and it responsible for acting as the hsot that all PCIe devices receive and send packets with. 
-
-
-
-
-
-
 
 Each BAR is a small 32-bit memory location that points to another (usually much larger) memory region which we'll 
 call the corresponding "BAR region". Each BAR tells the CPU the base address + width + other properties of its BAR 
