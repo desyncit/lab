@@ -30,30 +30,23 @@ params:
       color: "orange"
 
   promptColor: grey
-  promptSimbols: ":~$"
+  promptSimbols: ":->$"
   promptSimbolsColor: grey
   startxLocation: https://www.linkedin.com/in/desyncit
-  useLess: true
+  useLess: false
   listLS: true
   exitLocation: "about:blank"
   exitMessage: "[Shutting her down!]"
   source: true
-  greeting: |
-    På norsk 
+  greeting: |-
+    Hei,
 
-    Velkommen til tordendomen, en nettbasert CV for Justin Herron
-    Skriv «hjelp» for en liste over tilgjengelige kommandoer
+    My name is Justin Herron and you have found my terminal CV :).
+    See `projects` to see how this site is built.
 
-    English
-
-    Welcome to the Thunderdome, an online resume for Justin Herron
-
-    Type "help" for a list of available commands
-
-    If a terminal is not your thing type startx to load linkedin 
-    resume
-
-  bootsequence: |
+    - Type "help" for a list of available commands
+    - If a terminal is not your thing type startx to load linkedin resume.
+  bootsequence: |-
     User request detected
     Reserving Cloud Resources
     ...... .. .... ... ... .. ... .. done
@@ -93,21 +86,13 @@ params:
     . / .-. . .- .-.. .-.. -.-- / ... -- .- .-. -
 
     Linux 9eab0f3637db 6.15.6-arch1-1 #1 SMP PREEMPT_DYNAMIC Thu, 10 Jul 2025 17:10:18 +0000 x86_64 GNU/Linux
-    Loglevel = shhhhh
-    ......
-    ............
-    ..................
-    ........................
-    ..............................
-    ....................................
 
     [Stargate]: ready
     [Neckbeard]: grown
     [Arch Linux]: ready 
     [WebServer]: ready
     [TerminalCV]: ready
-
-    Boot Complete, I HAVE THE POWER!
+    ---
   whois:
     settings:
       useLess: false
@@ -117,9 +102,8 @@ params:
       location: "Tampa, FL"
       email: "jherron@net-dev.net"
       homelink: "https://jherron.ontampa.dev"
-      description: |
-        I like to build, automate and bootstrap Data Centers that 
-        run on open source software. 
+      description: |-
+        I like to build, automate and bootstrap Data Centers that run on open source software. 
 
         gpg key 0x5293D7F37A9FC00D
 
@@ -146,20 +130,20 @@ params:
         company: "Tampa Devs"
         location: Tampa, FL
         date: August 2010 - Present
-        description: |
-          My initial involvement with the nonprofit Tampa Devs began as an attendee at local meetups and technical talks. 
-          After engaging with board members, we collectively came up with the idea to build an open-source community cloud 
-          designed to support local developer projects, technical presentations, meetups, and mentorship programs.
+        description: |-
+          My initial involvement with the nonprofit Tampa Devs began as an attendee at local meetups and technical talks. After engaging 
+          with board members, we collectively came up with the idea to build an open-source community cloud designed to support local developer 
+          projects, technical presentations, meetups, and mentorship programs.
 
-          The first version of the community cloud was deployed on personal server hardware using Libvirt and Ansible, and was launched 
-          in August 2024 for the BayHacks 2024 Hackathon. Where participants were given access to virtual machines on which they could build 
-          and deploy their applications. However, after working closely with both participants and community members, it became clear that version  
-          one of the Tampa Devs Cloud was not well suited for long term community projects.
+          The first version of the community cloud was deployed on personal server hardware using Libvirt and Ansible, and was launched in 
+          August 2024 for the BayHacks 2024 Hackathon. Where participants were given access to virtual machines on which they could build 
+          and deploy their applications. However, after working closely with both participants and community members, it became clear that 
+          version one of the Tampa Devs Cloud was not well suited for long term community projects.
 
           This led to the development of version two, which transitioned to using Open Kubernetes Distribution (OpenShift Origin). Ceph was chosen 
           for distributed storage, while Libvirt continued to host the cluster nodes, all orchestrated through Ansible playbooks. However, the move 
-          to a more scalable infrastructure introduced new challenges specifically the need for additional colocation space and better performance to 
-          support a growing community of over 2,500 members.
+          to a more scalable infrastructure introduced new challenges specifically the need for additional colocation space and better performance 
+          to support a growing community of over 2,500 members.
 
           To address these limitations, I engaged with local hosting providers in the Tampa Bay area and secured their support in exchange for promotional 
           visibility at developer events. This outreach resulted in over $50,000 worth of donated hardware and hosting resources.
@@ -172,30 +156,33 @@ params:
         company: "Red Hat"
         location: Tampa,FL ( Remote )
         date: Dec 2022 - May 2025
-        description: |
+        description: |-
           -> Supported customers in maintenance and troubleshooting of standalone Ceph™ clusters integrated with 
-          Red Hat OpenShift Container Platform™, ensuring consistent performance and uptime.
+             Red Hat OpenShift Container Platform™, ensuring consistent performance and uptime.
 
-          -> Appointed by management to lead a bare-metal lab project, replicating customer environments using Lenovo™, Dell™, 
-          and Supermicro™ chassis to isolate and test complex infrastructure issues.
+          -> Appointed by management to lead a bare-metal lab project, replicating customer environments 
+             using Lenovo™, Dell™, and Supermicro™ chassis to isolate and test complex infrastructure issues.
 
-          -> Coordinated with cross-functional teams to acquire a 100 Gb/s Layer 3 switch and expand Ceph cluster storage by 100 TiB, 
-             enabling production-scale testing across services including RGW (multisite), CephFS, and RBD.
+          -> Coordinated with cross-functional teams to acquire a 100 Gb/s Layer 3 switch and expand Ceph cluster 
+             storage by 100 TiB, enabling production-scale testing across services including RGW (multisite), 
+             CephFS, and RBD.
 
           -> Automated infrastructure deployments using multi-stage Ansible™ playbooks, deploying custom 
              container images from quay.io via GitLab™ CI/CD pipelines.
 
-          -> Integrated Kerberos authentication and Beaker system automation to manage hardware resources and streamline job submission workflows.
+          -> Integrated Kerberos authentication and Beaker system automation to manage hardware resources and 
+             streamline job submission workflows.
 
-          -> Facilitated identification and escalation of upstream software defects, and provided a collaborative environment for resolving issues 
-             related to both OpenShift Data Foundation (ODF™) and standalone Ceph™ deployments.
+          -> Facilitated identification and escalation of upstream software defects, and provided a collaborative 
+             environment for resolving issues related to both OpenShift Data Foundation (ODF™) and standalone Ceph™ 
+             deployments.
 
       - jobTitle: Principal Network Engineer
         color: red
         company: Ace Host
         location: Tampa,FL and Raleigh, NC 
         date: Feb 2022 - Aug 2022
-        description: |
+        description: |-
           As the Principal Network Engineer for two data center networks in Tampa,FL and Raleigh, NC. I led strategic 
           infrastructure initiatives, providing connectivity for over 200 customers.
 
@@ -232,7 +219,7 @@ params:
         company: Ace Host
         location: Tampa,FL
         date: July 2021 - Febuary 2022
-        description: |
+        description: |-
           Contracted by C-Level executive staff to provide technical guidance on data center colocation workflows 
           and provide design proposal for the Tampa, FL data center BGP Networks.
 
@@ -241,7 +228,7 @@ params:
         company: Red Hat    
         location: Tampa,FL ( Remote )
         date: Nov 2019 - Jan 2022 
-        description: |
+        description: |-
           Primary responsibilities included packet capture analysis of transport layer protocols and layer three routing data 
           on Red Hat Enterpise Linux. Additional responsibilities included contributing to the knowledge content service 
           (KCS) via writen articles.
@@ -251,9 +238,10 @@ params:
         company: Hostway Services   
         location: Tampa,FL
         date: Sep 2018 - Nov 2019
-        description: |
+        description: |-
           -> Deployed and managed Linux systems (Debian, Centos, Arch, Manjaro, Red Hat, etc).
-          -> Built Openstack Cloud (Stein release) and Ceph storage backend (for cinder exporting to nova) with provided employee rack space. 
+          -> Built Openstack Cloud (Stein release) and Ceph storage backend (for cinder exporting to nova) with provided 
+             employee rack space. 
           -> Automated SSL certificate verification with Let's Encrypt and Google Cloud(GCP) APIs.
 
 
@@ -272,7 +260,7 @@ params:
         description: | 
           Basic Norwegian language skills; continuation of fundamentals of grammar. 
 
-      - courseName: Hillsborough Community College
+      - courseName: Hillsborough County Community College
         date: 2017 - 2018
         color: teal
         description: |
@@ -292,7 +280,7 @@ params:
         color: green
         percentage: 100
         description: |
-          I have a deep understanding of Linux
+          I use Arch Linux as my daily driver, but I also know Red Hat Debian and Suse.
 
       - name: Data Center Networking
         color: green
@@ -326,13 +314,11 @@ params:
                RFC 768 - User Datagram Protocol
                RFC 8085 - UDP Usage Guideline
 
-      - name: automation
+      - name: Automation
         color: green
         percentage: 99.9999
         description: | 
-          using tools like bash and cron jobs for key rotations
-          Ansible for system provisioning and virtual machine deployments
-          PXE and kickstart for host level provisioning
+          Ansible, bash, etc
 
   softskills:
     settings:
@@ -358,25 +344,16 @@ params:
 
       - name: Bokmål, Norwegian
         percentage: 60
-        description: |
-          Jeg snakke norsk som et barn, fordi jeg ikke øver så 
-          mye some jeg burde. Men jeg kan leser og skriver norsk. 
+        description: |-
+          Jeg snakke norsk som et barn, fordi jeg ikke øver så mye some jeg burde. Men jeg kan leser og skriver norsk. 
 
   projects:
     settings:
       useLess: false
     details:
-      - title: Gitlab/Container builds
-        color: white
-        link: https://gitlab.com/net-dev-net/lab/-/tree/main/container-builds
-        description: |
-          Repository that contains the source code for this blog and mirrors
-          to github.It also contains source code for other container
-          builds hosted on the Tampa Devs Cloud.
-
       - title: Tampa Devs Cloud
         color: white
-        date: since May 2025
+        date: May 2025
         link: cloud.ontampa.dev
         description: |
           Project Publications
@@ -385,6 +362,21 @@ params:
 
           2. Powered by Community! A Thank You to Our Sponsors Ace Host & xByte!
              https://www.tampadevs.com/blog/2025/20250729-cloud-project-thank-you-to-our-sponsors
+
+      - title: Github - Container builds
+        color: white
+        link: https://github.com/desyncit/lab/tree/main/container-builds
+        description: |-
+          Repository for various containers. 
+
+
+      - title: Gihub - Terminal Resume
+        color: white
+        since: August 2025
+        link: https://github.com/desyncit/lab/tree/main/container-builds/resume-jherron
+        description: |-
+          Uses Hugo + TerminalCV
+          Pushed to Gitlab first and then mirrored to github.
 
   certifications:
     settings:
@@ -401,7 +393,7 @@ params:
     commandName: 'articles'
     title: "Publications hosted in Red Hat's Knowledge Centered Support(KCS) system I have written."
     titleColor: teal
-    content: |
+    content: |-
 
       - title: 'Ceph - src/cls/rgw/cls_rgw.cc:2531: ERROR: rgw_obj_remove: cls_cxx_remove returned -2'
         publisher: Red Hat 
