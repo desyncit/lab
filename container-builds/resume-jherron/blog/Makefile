@@ -1,12 +1,12 @@
-CONF=--config ./config.yaml
+CONF=--config ./config.yml --baseURL http://$(shell echo $$HOSTNAME)
 MFLAGS=-M --noBuildLock --gc --noTimes --noChmod --printMemoryUsage --templateMetrics --logLevel debug -l ./themes/terminalcv/layouts 
-ENV=-e Valhalla
+ENV=--bind 0.0.0.0 -e Valhalla
 
 
 all: server
 
 server:
-	hugo $(MFLAGS) server $(ENV)
+	hugo $(MFLAGS) server $(CONF) $(ENV)
 
 .PHONY: clean
 
