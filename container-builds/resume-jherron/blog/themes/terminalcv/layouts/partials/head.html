@@ -19,10 +19,16 @@
     <link href="https://cdnjs.cloudflare.com/ajax/libs/jquery.terminal/2.42.0/css/jquery.terminal.min.css" rel="stylesheet"/>
 
     <style>
-        body {
-            width: 100%;
-            font-size: 18px;
+        .center {
+	  display: block;
+	  margin: auto;
+	  width: 50%;
         }
+        body {
+            font-size: 18px;
+	    width: auto;
+
+        } 
     </style>
 {{ if .Site.Params.analytics.code }}
     {{ .Site.Params.analytics.code }}

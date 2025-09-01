@@ -4,8 +4,8 @@ title: "Blog for Justin Herron"
 
 params:
   version: "v1.7-8"
-  description: "Terminal Resume for Justin Herron"
   blog: true
+  description: "Terminal Resume for Justin Herron"
   prompt:
     core:
       text: "du@usersys"
@@ -47,15 +47,9 @@ params:
     - Type "help" for a list of available commands
     - If a terminal is not your thing type startx to load linkedin resume.
   bootsequence: |-
-    User request detected
-    Reserving Cloud Resources
-    ...... .. .... ... ... .. ... .. done
-    Cloud Network ready
-    .............................. done
-    Cloud Instance ready (maybe?)
-    .......................
-    Initiating startgate and growing neckbeard
     boot: Arch Linux
+    Linux 9eab0f3637db 6.15.6-arch1-1 #1 SMP PREEMPT_DYNAMIC
+
                       -
                      .o+
                      ooo/
@@ -76,22 +70,10 @@ params:
      +++.                           +-/+/
      +.                               +/
 
-    injecting cheat code sequence "up down left right square x triangle"
-    ......................................................................
-    
-    SEQUENCE ACCEPTED starting super ultra mega 10x secured site
-
     .. ..-. / -.-- --- ..- / ..-. .. --. ..- .-. . -.. / --- ..- - / - .... .. 
     ... / .-- .- ... / -- --- .-. ... . / -.-. --- -.. . / -.-- --- ..- / .- .-. 
     . / .-. . .- .-.. .-.. -.-- / ... -- .- .-. -
 
-    Linux 9eab0f3637db 6.15.6-arch1-1 #1 SMP PREEMPT_DYNAMIC Thu, 10 Jul 2025 17:10:18 +0000 x86_64 GNU/Linux
-
-    [Stargate]: ready
-    [Neckbeard]: grown
-    [Arch Linux]: ready 
-    [WebServer]: ready
-    [TerminalCV]: ready
     ---
   whois:
     settings:
