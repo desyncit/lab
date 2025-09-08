@@ -1,4 +1,4 @@
-FROM quay.io/lib/archlinux
+FROM registry.archlinux.org/archlinux/archlinux-docker:base-master
 RUN pacman -Sy hugo make --noconfirm
 RUN useradd -m hugo && \
     mkdir /srv/blog && \
