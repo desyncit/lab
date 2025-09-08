@@ -1,14 +1,17 @@
-CONF=--config ./config.yml --baseURL http://$(shell echo $$HOSTNAME)
-MFLAGS=-M --noBuildLock --gc --noTimes --noChmod --printMemoryUsage --templateMetrics --logLevel debug -l ./themes/terminalcv/layouts 
-ENV=--bind 0.0.0.0 -e Valhalla
+CONF=--configDir ./config --baseURL http://$(shell echo $$HOSTNAME)
+MFLAGS=-M --gc --noTimes --noChmod --printMemoryUsage --templateMetrics --logLevel debug
+DFLAGS=--noBuildLock --disableFastRender
+ENV=--bind 0.0.0.0 -e valhalla
 
 
 all: server
 
-server:
-	hugo $(MFLAGS) server $(CONF) $(ENV)
-
 .PHONY: clean
 
 clean: 
-	rm -rf resources public
+	rm -rf resources public .hugo_build.lock
+server:
+	hugo $(MFLAGS) server $(CONF) $(ENV)
+dev: clean
+	hugo $(MFLAGS) server $(DFLAGS) $(CONF) $(ENV)
+
