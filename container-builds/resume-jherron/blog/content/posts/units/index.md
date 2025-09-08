@@ -50,7 +50,7 @@ So now let's start off by resolving the first constraint for a base unit of meas
 
 Additionally,
 
-"_N such devices can store N bits, since the total number of possible states is 2^N and log_2 2^N = N_." 
-"_If the base 10 is used the units may be called decimal digits._"
+"_N such devices can store N bits, since the total number of possible states is 2^N and log_2 2^N = N.   
+ If the base 10 is used the units may be called decimal digits._"
 
 This illustrates that a "bit" is a short hand representation for "binary digit". But in itself __IS NOT__ a number but a representation of a state at some time index. With the concept of bit defined, You may ask, "What does that have to with little b and big B?" 

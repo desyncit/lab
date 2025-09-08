@@ -1,0 +1,6 @@
+server:                                                                                                                                                                                        
+  redirects:
+  - force: false
+    from: "/**"
+    status: 404
+    to: /404.html
