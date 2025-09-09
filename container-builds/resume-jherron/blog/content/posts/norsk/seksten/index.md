@@ -1,6 +1,12 @@
++++
+title = "Mine notater om å lære norsk"
+date = "2025-09-11"
+category = "Norsk"
+author = "desyncit"
+description = "Chapter 16 notes"
++++
 
 # Kapital 16: Familie og feiring
-
 
 > Språktips
 

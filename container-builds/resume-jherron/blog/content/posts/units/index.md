@@ -1,5 +1,5 @@
 +++
-title = "bits nibbles and bytes "
+title = "bits, nibbles and bytes"
 description = "Explains why little b and big B notation are not the same."
 date = "2025-08-18"
 category = "Units"
