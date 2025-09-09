@@ -8,17 +8,16 @@ description = "This is a story about how a data center technician wrinkled his b
 
 [p1]: https://www.tampadevs.com/blog/2024/20240819-the-public-cloud-project
 
-
 ---
 
 ## Intro
 This is a story about all the "fun" I had with trying to understand the world in which computer network switches are born. Mainly through this beautiful box that is currently supporting the [Tampa Devs Public Cloud Project][p1].
 
-{{< figure src="images/_bms/200_019.png"  class="center" >}}
+{{< figure src="images/MjAwXzAxOS5wbmcgMTQzODcK"  class="center" >}}
 
 There has always been one particular piece of networking equipment that I have been in love with ( don't judge me lol, this is the thing I like ).Its the infamous Top Of Rack switch(TOR). A couple of years ago, whilst I working for Red Hat, I wanted to find a switch for my mini data center lab. But not just any switch, but a `Quanta T3048-LY9`, an awesome `40 Gbp/s leaf switch`!
 
-{{< figure src="images/_bms/200_028.png" height="50%" width="50%" >}}
+{{< figure src="images/MjAwXzAyOC5wbmcgMjYyNTcK" height="50%" width="50%" >}}
 
 However everytime I tried to search for one, there was always an eight thousand dollar price tag associated with it. Needless to say, I could not in good sense shell out that amount of money, when I didn't have a "real" need for it. However, Thor & Odin decided to smile down upon me and grace me some really awesome coworkers.
 
@@ -64,10 +63,10 @@ Before we can get to the really cool stuff, we need to go over the basic types o
    The logical layout, shown below in `Figure 1.`, is the the high level overview without getting into the i2c and PCI-E, whilst `Figure 2.` shows a more detailed version of whats going on at a hardware layer inside a network switch. 
 
 Figure 1.
-{{< figure src="images/_bms/image01.png"  height="50%" width="50%" >}}
+{{< figure src="images/aW1hZ2UwMS5wbmcgMjk5OTAK"  height="50%" width="50%" >}}
   
 Figure 2. 
-{{< figure src="images/_bms/200_014.png"  height="50%" width="50%" >}}
+{{< figure src="images/MjAwXzAxNC5wbmcgMTMyMzEK"  height="50%" width="50%" >}}
 
 ---
 
