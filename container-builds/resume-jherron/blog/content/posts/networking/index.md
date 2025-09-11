@@ -2,7 +2,7 @@
 title = "The Infamous Data Center Top of Rack Switch (TOR)"
 date = "2025-08-30"
 category = "Networking"
-author = "desyncit"
+author = "Justin Herron"
 description = "This is a story about how a data center technician wrinkled his brain."
 +++
 
