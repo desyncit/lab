@@ -1,9 +1,10 @@
+{{ define "main" }}
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>404 - Page Not Found</title>
+    <title>ENOENT No such file or directory</title>
     <style>
         @import url('https://fonts.googleapis.com/css?family=Roboto+Mono');
         
@@ -106,7 +107,7 @@
     </div>
 
     <script>
-        const text = "Oops! page not found.";
+        const text = "ENOENT No such file or directory";
         const typewriterElement = document.getElementById('typewriter-text');
         const replayButton = document.getElementById('cb-replay');
         let isAnimating = false;
@@ -133,3 +134,4 @@
     </script>
 </body>
 </html>
+{{ end }}

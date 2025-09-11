@@ -12,4 +12,3 @@ Hei, jeg heter Justin og jeg bor i Tampa,FL, USA. Men jeg studerer norsk ved uni
 
 ---
 
-- [Ordbok](/posts/norsk/ordbok.json)

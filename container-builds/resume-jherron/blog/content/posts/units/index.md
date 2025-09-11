@@ -3,7 +3,7 @@ title = "bits, nibbles and bytes"
 description = "Explains why little b and big B notation are not the same."
 date = "2025-08-18"
 category = "Units"
-author = "desyncit"
+author = "Justin Herron"
 tags = ['units']
 +++
 [iso-org]: https://www.iso.org/about
