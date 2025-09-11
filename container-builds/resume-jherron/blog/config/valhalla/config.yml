@@ -1,6 +1,11 @@
 theme: "terminalcv"
 title: "Blog for Justin Herron"
-
+server: 
+  redirects:  
+  - force: false  
+    from: "/**"  
+    status: 404  
+    to: /404.html 
 params:
   version: "v1.7-8"
   blog: true
