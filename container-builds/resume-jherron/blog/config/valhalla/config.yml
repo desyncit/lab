@@ -111,31 +111,39 @@ params:
     settings:
       useLess: true
     details:
+      - jobTitle: Consultant - Ansible Automation Platform
+        color: red
+        company: "Red Hat"
+        location: Tampa, Florida, United States
+        date: September 2025 - Present
+        description: |-
+          Guiding organizations in adopting advanced automation features like Event-Driven Ansible.
+
       - jobTitle: Principal Cloud Architect
         color: red
         company: "Tampa Devs"
-        location: Tampa, FL
-        date: August 2010 - Present
+        location: Tampa, Florida, United States 
+        date: August 2025 - September 2025
         description: |-
           My initial involvement with the nonprofit Tampa Devs began as an attendee at local meetups and technical talks. After engaging 
-          with board members, we collectively came up with the idea to build an open-source community cloud designed to support local developer 
-          projects, technical presentations, meetups, and mentorship programs.
-
-          The first version of the community cloud was deployed on personal server hardware using Libvirt and Ansible, and was launched in 
-          August 2024 for the BayHacks 2024 Hackathon. Where participants were given access to virtual machines on which they could build 
-          and deploy their applications. However, after working closely with both participants and community members, it became clear that 
-          version one of the Tampa Devs Cloud was not well suited for long term community projects.
-
-          This led to the development of version two, which transitioned to using Open Kubernetes Distribution (OpenShift Origin). Ceph was chosen 
-          for distributed storage, while Libvirt continued to host the cluster nodes, all orchestrated through Ansible playbooks. However, the move 
-          to a more scalable infrastructure introduced new challenges specifically the need for additional colocation space and better performance 
-          to support a growing community of over 2,500 members.
-
-          To address these limitations, I engaged with local hosting providers in the Tampa Bay area and secured their support in exchange for promotional 
-          visibility at developer events. This outreach resulted in over $50,000 worth of donated hardware and hosting resources.
-
-          With compute, storage, and network constraints resolved, additional Ansible playbooks were developed to implement a GitOps workflow using ArgoCD, 
-          enabling automated deployment of both infrastructure services and developer applications across the cluster.
+          with board members, we collectively came up with the idea to build an open-source community cloud designed to support local 
+          developer projects, technical presentations, meetups, and mentorship programs.
+          
+          The first version of the community cloud was deployed in August 2024 for the Bayhacks hackathon, on baremetal servers. 
+          During the hackathon participants were given access to virtual machines on which they could build and deploy their applications. 
+          However, after working closely with both participants and community members, it became clear that version one of the Tampa Devs 
+          Cloud wasn’t well-suited for long-term community projects.
+          
+          This led to the development of version two, which transitioned to using Open Kubernetes Distribution (OKD aka OpenShift Origin). 
+          Ceph was used for distributed storage, while Libvirt continued to host the cluster nodes, all orchestrated through Ansible playbooks. 
+          However, the move to a more scalable infrastructure introduced new challenges specifically the need for additional colocation space 
+          and better performance to support a growing community of over 2,500+ members.
+          
+          To address these limitations, I engaged with local hosting providers in the Tampa Bay area and secured their support in exchange for 
+          promotional visibility at developer events. This outreach resulted in over $50,000 worth of donated hardware and hosting resources.
+          
+          With compute, storage, and network constraints resolved, additional Ansible playbooks were developed to implement a GitOps workflow 
+          using ArgoCD, enabling automated deployment of both infrastructure services and developer applications across the cluster.
 
       - jobTitle: Engineer - Ceph Storage Team
         color: red
@@ -215,9 +223,7 @@ params:
         location: Tampa,FL ( Remote )
         date: Nov 2019 - Jan 2022 
         description: |-
-          Primary responsibilities included packet capture analysis of transport layer protocols and layer three routing data 
-          on Red Hat Enterpise Linux. Additional responsibilities included contributing to the knowledge content service 
-          (KCS) via writen articles.
+          Primary responsibilities included packet capture analysis of transport layer protocols and layer three routing data on Red Hat Enterpise Linux. Additional responsibilities included contributing to the knowledge content service (KCS) via writen articles.
 
       - jobTitle: Data Center Technician, Linux systems
         color: red 
@@ -226,8 +232,7 @@ params:
         date: Sep 2018 - Nov 2019
         description: |-
           -> Deployed and managed Linux systems (Debian, Centos, Arch, Manjaro, Red Hat, etc).
-          -> Built Openstack Cloud (Stein release) and Ceph storage backend (for cinder exporting to nova) with provided 
-             employee rack space. 
+          -> Built Openstack Cloud (Stein release) and Ceph storage backend (for cinder exporting to nova) with provided employee rack space. 
           -> Automated SSL certificate verification with Let's Encrypt and Google Cloud(GCP) APIs.
 
 
@@ -337,7 +342,7 @@ params:
     settings:
       useLess: false
     details:
-      - title: Tampa Devs Cloud
+      - title: Tampa Devs, Cloud Project
         color: white
         date: May 2025
         link: cloud.ontampa.dev
@@ -349,6 +354,10 @@ params:
           2. Powered by Community! A Thank You to Our Sponsors Ace Host & xByte!
              https://www.tampadevs.com/blog/2025/20250729-cloud-project-thank-you-to-our-sponsors
 
+          3. Tampa Devs (Pre-alpha) Cloud Unveil + Intro to Kubernetes  
+             https://www.youtube.com/watch?v=w__mr9pDgr8 
+
+
       - title: Github - Container builds
         color: white
         link: https://github.com/desyncit/lab/tree/main/container-builds
@@ -356,13 +365,12 @@ params:
           Repository for various containers. 
 
 
-      - title: Gihub - Terminal Resume
+      - title: Github - Terminal Resume
         color: white
         since: August 2025
         link: https://github.com/desyncit/lab/tree/main/container-builds/resume-jherron
         description: |-
-          Uses Hugo + TerminalCV
-          Pushed to Gitlab first and then mirrored to github.
+          Uses Hugo + TerminalCV pushed to Gitlab and then mirrored to Github.
 
   certifications:
     settings:
