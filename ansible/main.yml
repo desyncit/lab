@@ -8,6 +8,14 @@
 
   tasks:
 
+    - name: tasks related to _self
+      block:
+        - name: Include baseos
+          when:
+            - _self_package is defined
+          ansible.builtin.include_role:
+            name: baseos
+
     - name: Provision the bare metal chassis.
       when:
         - beaker_provision is defined

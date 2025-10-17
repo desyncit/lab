@@ -1,0 +1,2 @@
+export ANSIBLE_VAULT_PASSWORD_FILE=/etc/profile.include.d/decrypt.sh
+
