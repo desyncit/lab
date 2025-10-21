@@ -1,7 +1,0 @@
-collections:
-- name: ansible.posix
-- name: ansible.utils
-- name: kubernetes.core
-- name: community.general
-- name: containers.podman
-- name: fedora.linux_system_roles
