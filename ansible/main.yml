@@ -18,26 +18,18 @@
 
     - name: Provision the bare metal chassis.
       when:
+        - inventory_hostname not in groups['network']
         - beaker_provision is defined
         - release is defined
-        - inventory_hostname not in groups['network']
       block:
         - name: Bootstraping the baremetal
           ansible.builtin.include_role:
             name: beaker
 
-    - name: Configure Network bridge switch
-      when: network_provision is defined
-      block:
-        - name: Configuring bridge between cluster nodes
-          tags: network_backup_switch_config
-          ansible.builtin.include_role:
-            name: network
-
     - name: Provision the BaseOS.
-      when: baseos_provision is defined
+      when: 
+        - baseos_provision is defined
       block:
         - name: Deploying base configurations
-          tags: [baseos_ssh_keys, baseos_packages]
           ansible.builtin.include_role:
             name: baseos

@@ -1,0 +1,34 @@
+---
+version: 3
+images:
+  base_image:
+    name: quay.io/centos/centos:stream9
+dependencies:
+  python:
+    - kubernetes
+    - urllib3>=2.5.0
+  ansible_core:
+    package_pip: ansible-core>=2.16.13
+  ansible_runner:
+    package_pip: ansible-runner
+  galaxy:
+    collections:
+      - name: ansible.posix
+      - name: ansible.utils
+      - name: kubernetes.core
+      - name: community.general
+      - name: containers.podman
+      - name: fedora.linux_system_roles
+  python_interpreter:
+    package_system: "python312"
+    python_path: "/usr/bin/python3.12"
+additional_build_files:
+  - src: configs
+    dest: configs
+additional_build_steps:
+  prepend_base: |
+    RUN $PKGMGR install -y python3.12 python3.12-pip python3.12-devel sshpass 
+    RUN python3.12 -m pip install --upgrade pip setuptools
+  prepend_galaxy: |
+    COPY _build/configs/pip.conf    /etc/
+    COPY _build/configs/ansible.cfg /etc/ansible/

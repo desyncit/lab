@@ -1,8 +1,0 @@
----
-ansible-navigator:
-  execution-environment:
-    container-engine: podman
-    image: quay.io/jherron/ee-centos:latest
-    pull:
-      policy: missing
-  mode: stdout
