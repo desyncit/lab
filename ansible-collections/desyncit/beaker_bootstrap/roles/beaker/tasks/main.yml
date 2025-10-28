@@ -1,0 +1,6 @@
+---
+- name: Including pre-tasks
+  ansible.builtin.include_tasks: auth_kerb.yml
+
+- name: Including beaker client tasks
+  ansible.builtin.include_tasks: bkr.yml

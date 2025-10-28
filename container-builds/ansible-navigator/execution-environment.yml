@@ -4,8 +4,17 @@ images:
   base_image:
     name: quay.io/centos/centos:stream9
 dependencies:
+  system:
+    - python3.12 [platform:rpm]
+    - python3.12-pip [platform:rpm]
+    - python3.12-devel [platform:rpm]
+    - sshpass [platform:rpm]
   python:
+    - pip
+    - pyghmi
+    - wheel
     - kubernetes
+    - setuptools
     - urllib3>=2.5.0
   ansible_core:
     package_pip: ansible-core>=2.16.13
@@ -15,10 +24,7 @@ dependencies:
     collections:
       - name: ansible.posix
       - name: ansible.utils
-      - name: kubernetes.core
       - name: community.general
-      - name: containers.podman
-      - name: fedora.linux_system_roles
   python_interpreter:
     package_system: "python312"
     python_path: "/usr/bin/python3.12"
@@ -27,8 +33,14 @@ additional_build_files:
     dest: configs
 additional_build_steps:
   prepend_base: |
-    RUN $PKGMGR install -y python3.12 python3.12-pip python3.12-devel sshpass 
-    RUN python3.12 -m pip install --upgrade pip setuptools
-  prepend_galaxy: |
-    COPY _build/configs/pip.conf    /etc/
-    COPY _build/configs/ansible.cfg /etc/ansible/
+    ENV ANSIBLE_VAULT_PASSWORD_FILE=/etc/profile.d/decrypt.sh
+    RUN useradd --home-dir /runner runner
+    RUN yum config-manager --add-repo https://beaker-project.org/yum/beaker-client-CentOSStream.repo
+  append_final: |
+    COPY _build/configs/profile.d/*.sh                           /etc/profile.d/
+    COPY --chown=runner:runner _build/configs/ansible.cfg        /runner/.ansible.cfg
+    COPY --chown=runner:runner _build/configs/beaker_client      /runner/.beaker_client
+    COPY --chown=runner:runner _build/configs/ssh                /runner/.ssh
+options:
+  workdir: /runner
+  user: runner
