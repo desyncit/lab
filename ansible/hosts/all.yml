@@ -1,1 +1,7 @@
+---
 all:
+  children:
+    _self:
+      hosts:
+        localhost:
+          ansible_user: jherron

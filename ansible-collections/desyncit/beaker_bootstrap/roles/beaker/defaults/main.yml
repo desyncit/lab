@@ -1,0 +1,8 @@
+---
+# see pre.yml
+beaker_krb5_state: 1
+
+beaker_oob_endpoint: "None"
+beaker_ipmi_user: "None"
+beaker_ipmi_pass: "None"
+

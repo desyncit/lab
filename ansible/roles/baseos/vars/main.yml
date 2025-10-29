@@ -2,3 +2,67 @@
 baseos_rpms:
   - { name: vim, state: latest }
   - { name: wget, state: latest }
+baseos_file_list:
+  - name: key
+    place: /etc/vault/main/key
+  - name: decrypt.sh
+    place: /etc/profile.include.d/decrypt.sh
+  - name: local.sh
+    place: /etc/profile.d/local.sh
+  - name: ansible.include
+    place: /etc/profile.include.d/ansible.include
+  - name: psone.include
+    place: /etc/profile.include.d/psone.include
+  - name: redhat.include
+    place: /etc/profile.include.d/redhat.include
+baseos_gpg_systemd_user:
+  - name: gpg-agent.service
+    state: started
+    scope: user
+    enabled: true
+  - name: gpg-agent.socket
+    state: started
+    scope: user
+    enabled: true
+  - name: gpg-agent-browser.socket
+    state: started
+    scope: user
+    enabled: true
+  - name: gpg-agent-extra.socket
+    state: started
+    scope: user
+    enabled: true
+  - name: gpg-agent-ssh.socket
+    state: started
+    scope: user
+    enabled: true
+baseos_gpg_packages:
+  - gnupg2
+  - gnupg2-smime
+  - libyubikey
+  - python3-yubikey-manager
+  - pam_yubico
+baseos_gpg_files:
+  - gpg-agent.conf
+  - gpg.conf
+baseos_users:
+  - short_name: "jherron"
+    cannonical_name: "Justin Herron"
+    email: "jherron@net-dev.net"
+    group: "wheel"
+baseos_fedora_groups:
+  - "@admin-tools"
+  - "@c-development"
+  - "@container-management"
+  - "@kde-media"
+  - "@kde-mobile"
+  - "@kde-mobile-apps"
+  - "@kde-desktop"
+  - "@robotics-suite"
+  - "@system-tools"
+baseos_fedora_adhoc_rpms:
+  - policycoreutils
+  - ansible-collection-community-general
+  - python3-ansible-lint
+  - podman
+  - vim
