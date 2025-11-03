@@ -8,6 +8,7 @@ beaker_bucket_auth: "{{ beaker_bucket + '/' + 'auth' + '/' }}"
 beaker_bucket_kickstart: "{{ beaker_bucket + '/' + 'ks' + '/' }}"
 
 beaker_client_path: "{{ ansible.builtin.lookup('env', 'HOME') }}"
+beaker_client_hub: "{{ hub_url | default('https://beaker.serverurl.com') }}"
 beaker_client_auth_method: "{{ auth_method | default('krbv') }}"
 
 # define in vars/vault.yml
@@ -21,9 +22,12 @@ beaker_kerberos_realm: "{{ kerb_realm | default('REALM.EXAMPLE.COM') }}"
 beaker_kerberos_principal: "{{ kerb_principal | default(auth_username) }}"
 beaker_kerberos_password: "{{ kerb_password | default(auth_password) }}"
 
-beaker_kickstart: "{{ beaker_kickstart_bucket + inventory_hostname_short + '_ks.cfg' }}"
 
 # ks.cfg vars
+beaker_ks_config: "{{ beaker_bucket_bucket + inventory_hostname_short + '_ks.cfg' }}"
+beaker_ks_rootpw: "{{ ks_rootpw | ansible.builtin.password_hash }}"
+
+
 # if Using RHEL define in vars/vault.yml
 beaker_ks_rhsm_org: "{{ rhsm_org | default('None') }}"
 beaker_ks_rhsm_key: "{{ rhsm_key | default('None') }}"

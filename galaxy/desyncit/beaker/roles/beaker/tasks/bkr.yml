@@ -42,7 +42,7 @@
     - name: Generating Kickstart configs
       ansible.builtin.template:
         src: ks.cfg.j2
-        dest: "{{ beaker_kickstart }}"
+        dest: "{{ beaker_ks_config }}"
         mode: "0444"
 
 - name: Encapsulte Beaker client tasks
