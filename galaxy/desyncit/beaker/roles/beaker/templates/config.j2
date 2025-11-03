@@ -1,0 +1,10 @@
+HUB_URL={{ beaker_hub }}
+AUTH_METHOD = {{ beaker_auth_method }} 
+{% if beaker_auth_method == "krbv" %}
+KRB_REALM = "{{ beaker_kerberos_realm }}"
+{% endif %}
+{% if beaker_auth_method == "simple" %}
+USERNAME = "{{ beaker_auth_username }}"
+PASSWORD = "{{ beaker_auth_password }}"
+{% endif %}
+

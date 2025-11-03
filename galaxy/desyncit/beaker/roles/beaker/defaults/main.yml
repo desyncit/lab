@@ -1,0 +1,30 @@
+---
+beaker_ipmi_user: "{{ beaker_ipmi_user | defualt(None) }}"
+beaker_ipmi_pass: "{{ beaker_ipmi_pass | default(None) }}"
+beaker_ipmi_endpoint: "{{ beaker_ipmi_endpoint | default(None) }}"
+
+beaker_bucket: "/tmp"
+beaker_bucket_auth: "{{ beaker_bucket + '/' + 'auth' + '/' }}"
+beaker_bucket_kickstart: "{{ beaker_bucket + '/' + 'ks' + '/' }}"
+
+beaker_client_path: "{{ ansible.builtin.lookup('env', 'HOME') }}"
+beaker_client_auth_method: "{{ auth_method | default('krbv') }}"
+
+# define in vars/vault.yml
+beaker_auth_username: "{{ auth_username | default('admin') }}"
+beaker_auth_password: "{{ auth_password | default('password') }}"
+
+beaker_kerberos_state: 1
+
+# define in vars/vault.yml
+beaker_kerberos_realm: "{{ kerb_realm | default('REALM.EXAMPLE.COM') }}"
+beaker_kerberos_principal: "{{ kerb_principal | default(auth_username) }}"
+beaker_kerberos_password: "{{ kerb_password | default(auth_password) }}"
+
+beaker_kickstart: "{{ beaker_kickstart_bucket + inventory_hostname_short + '_ks.cfg' }}"
+
+# ks.cfg vars
+# if Using RHEL define in vars/vault.yml
+beaker_ks_rhsm_org: "{{ rhsm_org | default('None') }}"
+beaker_ks_rhsm_key: "{{ rhsm_key | default('None') }}"
+beaker_ks_rhsm_release: "{{ rhsm_release | default('None') }}"

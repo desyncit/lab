@@ -1,30 +1,37 @@
 text --non-interactive
 reboot
-%addon com_redhat_kdump --enable --reserve-mb='auto' 
+%addon 
+  com_redhat_kdump --enable --reserve-mb='auto'
 %end
 
 %post --logfile /tmp/post.log
 VG=$(lvs| awk '/root/{print $2}')
 PV=$(pvs| awk '/sd[a-z]/{print $1}')
 lvextend -r $VG/root $PV
+
 sed -i 's/#PermitRootLogin prohibit-password/PermitRootLogin yes/g' /etc/ssh/sshd_config
-{% if ansible_distribution == "RedHat" %} 
-subscription-manager register --org={{ rhsm_org }} --activationkey={{ rhsm_activtionkey }}
-subscription-manager release --set={{ os_release_id }}
+
+{% if ansible_distribution == "RedHat" %}
+subscription-manager register --org={{ beaker_ks_rhsm_org }} --activationkey={{ beaker_ks_rhsm_key }}
+subscription-manager release --set={{ beaker_ks_rhsm_release }}
 {% endif %}
 %end
 
 %pre --logfile /tmp/pre.log
+
 VG=$(lvs | awk '/\s.root/{print $2}')
 vgremove -y -ff $VG
 pvremove -y -ff /dev/sd*
 pvremove -y -ff /dev/nvme*
 wipefs -a /dev/sd*
+
 %end
 
 %packages
+
 @^minimal-environment
 @system-tools
+
 %end
 
 ## Environment
@@ -37,15 +44,20 @@ lang en_US.UTF-8
 network --hostname="{{ ansible_hostname }}"
 
 # Installation media source
-{% for n in beaker_rhel_release_id %}
-  {% if "{{ release }}" in n["name"] %}
-nfs --server "{{ nfsserver }}" --dir {{ n["nfsdir"] }}
-  {% endif %}
-{% endfor %}
+url --url="{{ beaker_ks_ostree }}"
 
 zerombr
 clearpart --all --initlabel --disklabel gpt
 autopart --type=lvm --nohome --noswap --fstype=xfs
 bootloader --append="processor.max_cstate=1 intel_idle.max_cstate=0 idle=poll"
-timezone America/New_York --utc 
-rootpw {{ ks_rootpw }} --iscrypted
+
+{% if ansible_date_time.tz == "EST" or ansible_date_time.tz == "EDT" %}
+timezone America/New_York --utc
+{% elif ansible_date_time.tz == "CST" or ansible_date_time.tz == "CDT" %}
+timezone America/Chicago --utc
+{% elif ansible_date_time.tz == "MST" or ansible_date_time.tz == "MDT" %}
+timezone America/Denver --utc
+{% elif ansible_date_time.tz == "PST" or ansible_date_time.tz == "PDT" %}
+timezone America/Los_Angeles --utc
+{% endif %}
+rootpw {{ beaker_ks_rootpw }} --iscrypted
