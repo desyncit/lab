@@ -1,0 +1,133 @@
+---
+- name: Do auth before we do beaker tasks
+  ansible.builtin.include_tasks: auth.yml
+
+- name: Set next boot to pxe boot
+  ansible.builtin.command:
+    argv:
+      - /usr/bin/ipmitool
+      - -I
+      - lanplus
+      - -vv
+      - -H
+      - "{{ beaker_oob_endpoint }}"
+      - -U
+      - "{{ beaker_ipmi_user }}"
+      - -P
+      - "{{ beaker_ipmi_pass }}"
+      - chassis
+      - bootparam
+      - set
+      - bootflag
+      - force_pxe
+  register: beaker_register_ipmi_debug_out
+  changed_when: true
+
+- name: Check return of ipmi call
+  ansible.builtin.fail:
+    msg: "OOPS Check out of band management endpoint or enable ipmi in bios"
+  when: "'Set Boot Device to force_pxe' not in beaker_register_ipmi_debug_out.stdout'"
+
+- name: Encapsulate kickstart tasks
+  block:
+
+    - name: Set boot disk for kickstart
+      ansible.builtin.set_fact:
+        beaker_ks_disklist: "{{ ansible_devices[item].model }}"
+      loop: "{{ ansible_devices.keys() | select('match', 'sd.*') | list }}"
+      when:
+        - ansible_system_vendor == "Dell Inc."
+        - '"PERC" in ansible_devices[item].model'
+
+    - name: Generating Kickstart configs
+      ansible.builtin.template:
+        src: ks.cfg.j2
+        dest: "{{ beaker_kickstart }}"
+        mode: "0444"
+
+- name: Encapsulte Beaker client tasks
+  block:
+
+    - name: Overides
+      when:
+        - beaker_distro_family is not defined
+      block:
+
+        - name: Prompt for distro id
+          ansible.builtin.pause:
+            prompt: >
+              Input the id for the desired distro
+              {{ beaker_distro_dict }} from the
+              vars/main.yml
+          register: beaker_register_distro_id
+
+        - name: Reset to string
+          ansible.builtin.set_fact:
+            beaker_distro_family: "{{ item.name }}"
+          loop: "{{ beaker_distro_dict }}"
+          when:
+            - item.id in beaker_register_distro_id
+
+        - name: Get distro-tree-id from json
+          ansible.builtin.command:
+            argv:
+              - /usr/bin/bkr
+              - distro-trees-list
+              - --arch={{ ansible_architecture }}
+              - --family={{ beaker_distro_family }}
+              - --limit=1
+              - --format=json
+          register: beaker_register_distro_id_json
+          changed_when: true
+
+        - name: Grabbing beaker distro tree json
+          ansible.builtin.command:
+            argv:
+              - /usr/bin/bkr
+              - distro-trees-list
+              - --arch={{ ansible_architecture }}
+              - --family={{ beaker_distro_family }}
+              - --limit=1
+              - --format=json
+          register: beaker_register_distro_tree_id_json
+          changed_when: true
+
+        - name: Query json out for distro id
+          ansible.builtin.set_fact:
+            beaker_distro_tree_id: >
+              {{
+                beaker_register_distro_id_json.stdout
+               | from_json
+               | json_query('[0].distro_tree_id')
+              }}
+
+        - name: Setting beaker_ks_ostree
+          ansible.builtin.set_fact:
+            beaker_ks_ostree: >
+              {{
+                beaker_register_distro_tree_id_json.stdout
+               | from_json
+               | json_query("[0].available[?contains(@[1], `http`)[1]")
+               | unique
+               | first
+              }}
+
+    - name: Beaker kick off system provisioning
+      ansible.builtin.command:
+        argv:
+          - /usr/bin/bkr
+          - system-provision
+          - --kickstart
+          - "{{ beaker_kickstart }}"
+          - --distro-tree
+          - "{{ beaker_distro_tree_id }}"
+          - "{{ inventory_hostname }}"
+      changed_when: true
+
+    - name: Waiting for hosts to respond
+      ansible.builtin.wait_for:
+        host: "{{ inventory_hostname }}"
+        port: 22
+        search_regex: OpenSSH
+        delay: 60
+        timeout: 1200

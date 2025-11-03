@@ -1,0 +1,54 @@
+---
+- name: Auth method is simple
+  when:
+    - beaker_auth_method == 'simple'
+  block:
+
+    - name: Update the beaker client config
+      ansible.builtin.template:
+        src: config.j2
+        dest: "{{ beaker_config_path }}"
+        mode: '0644'
+
+    - name: Check to see if auth works via simple auth
+      block:
+
+        - name: Testing bkr client config for auth
+          ansible.builtin.command:
+            argv:
+              - /usr/bin/bkr
+              - whoami
+          register: beaker_auth_simple
+          changed_when: true
+
+      rescue:
+
+        - name: Broken log and exit
+          ansible.builtin.fail:
+            msg: "Oops problem with simple authentication"
+          when: beaker_auth_simple != "0"
+
+- name: Bkr auth
+  when:
+    - beaker_auth_method == "krbv"
+    - beaker_kerberos_state != "0"
+  block:
+
+    - name: Update the beaker client config
+      ansible.builtin.template:
+        src: config.j2
+        dest: "{{ beaker_client_path }}"
+        mode: '0644'
+
+    - name: Get a ticket from the kerberos server
+      community.general.krb_ticket:
+        principal: "{{ beaker_kerberos_principal }}"
+        password: "{{ beaker_kerberos_password }}"
+
+    - name: Checking krb5 ticket cache
+      ansible.builtin.command:
+        argv:
+          - /usr/bin/klist
+          - -s
+      register: beaker_krb5_state
+      changed_when: beaker_krb5_state.rc != "1"

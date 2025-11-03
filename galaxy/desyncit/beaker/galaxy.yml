@@ -1,0 +1,18 @@
+---
+namespace: desyncit
+name: beaker
+version: 1.0.0
+readme: README.md
+authors:
+    - "Justin Herron <jherron@net-dev.net>"
+description: >-
+  Collection for beaker related stuff
+  Upstream url https://beaker-project.org
+license:
+    - "CC-BY-4.0"
+dependencies:
+    "community.general": ">=10.7.3"
+tags:
+    - collection
+    - infrastructure
+repository: "https://github.com/desyncit/lab/galaxy/desyncit/beaker/roles/beaker"
