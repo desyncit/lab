@@ -1,8 +1,0 @@
----
-galaxy_info:
-  author: Justin Herron
-  description: Bootstrap the baremetal chassis
-  company: Netdev LLC
-  license: CC-BY-4.0
-  issue_tracker_url: https://gitlab.com/net-dev-net/lab/-/issues
-  min_ansible_version: "2.9"

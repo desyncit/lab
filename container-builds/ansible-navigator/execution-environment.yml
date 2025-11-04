@@ -32,6 +32,7 @@ dependencies:
       - name: ansible.posix
       - name: ansible.utils
       - name: community.general
+      - name: desyncit.beaker
   python_interpreter:
     package_system: "python312"
     python_path: "/usr/bin/python3.12"
