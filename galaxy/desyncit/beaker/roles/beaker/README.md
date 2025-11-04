@@ -12,7 +12,7 @@ See [upstream beaker documentation][beaker-docs] for more information.
 
 To use this role variables below need to be set and a beaker server needs to be reachable.
 
-- Beaker Client variables
+##### Beaker Client variables
 ```yaml
 - var: auth_method
   type: string
@@ -29,7 +29,7 @@ To use this role variables below need to be set and a beaker server needs to be 
         kerb_password: defaults to value of {{ auth_password }}
 ```
 
-- Kickstart template variables
+##### Kickstart template variables
 ```yaml
 - var: hub_url
   type: string
