@@ -1,0 +1,111 @@
+---
+storage_ceph_release: "{{ ceph_release | default('squid') }}"
+
+storage_cephadm_path: "/usr/bin/cephadm"
+storage_cephadm_url: "https://download.ceph.com/rpm-{{ storage_ceph_release }}/el9/noarch/cephadm"
+
+storage_auth_key_access: '/root/.ssh/id_ed25519.pub'
+storage_auth_key_private: '/root/.ssh/id_ed25519'
+
+# roles/network/var/main.yml
+storage_machine_net: "{{ network_machine_net }}"
+storage_cluster_net: "{{ network_cluster_net }}"
+storage_rgw_port: "{{ rgw_port | default('8080') }}"
+storage_rgw_ingress_port: "{{ rgw_ingress_port | default('80') }}"
+storage_rgw_ingress_ips: {}
+storage_rgw_endpoint: "{{ rgw_endpoint | default('http://example.com') }}"
+storage_grafana_port: "{{ grafana_port | default('3000') }}"
+
+
+storage_rgw_zone: "{{ rgw_zone }}"
+storage_rgw_realm: "{{ rgw_realm | default('None') }}"
+storage_rgw_zonegroup: "{{ rgw_endpoint | default('None') }}"
+storage_rgw_tls_state: false
+storage_rgw_tls_private_key: "{{ rgw_tls_private_key | default('None') }}"
+storage_rgw_tls_fullchain:  "{{ rgw_tls_fullchain | default('None') }}"
+storage_mgr_modules:
+  - name: cephadm
+    state: enable
+  - name: iostat
+    state: enable 
+  - name: prometheus 
+    state: enable
+  - name: restful
+    state: enable
+  - name: rgw
+    state: enable
+  - name: stats
+    state: enable
+  - name: osd_perf_query
+    state: enable
+storage_haproxy_opts: >-
+  check observe layer4 error-limit 2 on-error mark-down inter 1s rise 5 slowstart 5s
+storage_haproxy_prefix: >
+  {{ 
+    storage_rgw_endpoint 
+    | replace('.','-') 
+    | regex_replace('^https?://', '')
+  }}
+storage_haproxy_groups:
+  frontend:
+    - name: registry
+      mode: tcp
+      port: 5000
+      port_args: 'ssl crt /var/lib/haproxy/haproxy.pem'
+      options: ""
+      default_backend: "registry-{{ storage_haproxy_prefix }}"
+    - name: "ingress-{{ storage_haproxy_prefix }}"
+      mode: tcp
+      port: 6443
+      port_args: ""
+      options: "tcplog"
+      default_backend: "api-{{ storage_haproxy_prefix }}" 
+    - name: "ingress-{{ machines-gaspar-ontampa-dev }}"
+      mode: tcp
+      port: 22623
+      port_args: ""
+      options: "tcplog"
+      default_backend: "machines-{{ storage_haproxy_prefix }}"
+    - name: "ingress-http-{{ storage_haproxy_prefix }}"
+      mode: tcp
+      port: 80
+      port_args: ""
+      options: tcplog
+      default_backend: "http-{{ storage_haproxy_prefix }}"
+    - name: "ingress-https-{{ storage_haproxy_prefix }}" 
+      mode: tcp
+      port: 443
+      port_args: ""
+      options: tcplog
+      default_backend: "https-{{ storage_haproxy_prefix }}"
+  backend:
+    - name: "registry-{{ storage_haproxy_prefix }}"
+      mode: tcp
+      port: 5000
+      balance: static-rr
+      tag: registry
+      server_opts: "check"
+    - name: "api-{{ storage_haproxy_prefix }}"
+      mode: tcp
+      port: 6443
+      balance: static-rr
+      tag: api
+      server_opts: "{{ storage_proxy_opts }}"
+    - name: "machines-{{ storage_haproxy_prefix }}"
+      mode: tcp
+      port: 22623
+      balance: static-rr
+      tag: machines
+      server_opts: "{{ storage_haproxy_opts }}"
+    - name: "http-{{ storage_haproxy_prefix }}"
+      mode: tcp
+      port: 80
+      balance: static-rr
+      tag: http
+      server_opts: "{{ storage_haproxy_opts }}"
+    - name: "https-{{ storage_haproxy_prefix }}"
+      mode: tcp
+      port: 443
+      balance: static-rr
+      tag: https
+      server_opts: "{{ storage_haproxy_opts }}"

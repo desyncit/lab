@@ -1,0 +1,3 @@
+---
+network_public_net: "{{ public_net | default('None') }}"
+network_storage_net: "{{ storage_net | default('None') }}"

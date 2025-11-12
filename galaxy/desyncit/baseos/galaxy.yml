@@ -1,0 +1,20 @@
+---
+namespace: desyncit
+name: baseos
+version: 1.0.0
+readme: README.md
+repository: "https://github.com/desyncit/lab/tree/main/galaxy/desyncit"
+authors:
+    - "Justin Herron <jherron@net-dev.net>"
+description: >-
+  Collection of roles and plugins to install hosts to some base 
+  spec
+
+  Currently still a work in progress.
+license:
+    - "CC-BY-4.0"
+dependencies:
+    "community.general": ">=10.7.3"
+tags:
+    - collection
+    - infrastructure

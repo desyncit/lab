@@ -1,0 +1,14 @@
+---
+- name: When CentOS do
+  ansible.builtin.include_task: centos.yml
+  when:
+    - ansible_distribution == "CentOS"
+
+- name: When RHEL do
+  ansible.builtin.include_task: rhel.yml
+  when:
+    - ansible_distribution == "RedHat"
+
+- name: When anything else fail
+  ansible.builtin.fail:
+    msg: "Sorry {{ ansible_distribution }} not supported"

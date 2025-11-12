@@ -1,0 +1,6 @@
+---
+# okay so what is the minimum amount nics we need?
+- name: Deploy storage network
+  community.general.nmcli:
+
+

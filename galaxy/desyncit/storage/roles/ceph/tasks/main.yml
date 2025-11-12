@@ -1,0 +1,33 @@
+---
+- name: Deploy Ceph
+  run_once: True
+  when:
+    - deploy_ceph is defined
+    - inventory_hostname in groups['_admin']
+  ansible.builtin.include_tasks: 
+    file: bootstrap.yml
+  args:
+    apply:
+      delegate_to: admin
+
+- name: Deploy ceph services and modules
+  run_once: True
+  when:
+    - deploy_svcs is defined
+    - inventory_hostname in groups['_admin']
+  ansible.builtin.include_tasks: 
+    file: services.yml
+  args:
+    apply:
+      delegate_to: admin
+
+- name: Update proxy
+  run_once: True
+  when:
+    - update_proxy is defined
+    - inventory_hostname in groups['_admin']
+  ansible.builtin.include_tasks: 
+    file: ingress.yml
+  args:
+    apply:
+      delegate_to: admin
