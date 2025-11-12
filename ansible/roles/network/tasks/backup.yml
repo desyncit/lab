@@ -1,9 +1,0 @@
----
-- name: Backup switch configuration
-  tags: network_backup_switch_config
-  failed_when: false
-  dellemc.enterprise_sonic.sonic_config:
-    backup: true
-    backup_options:
-      dir_path: "{{ network_backup_dir_path }}"
-      filename: "{{ network_backup_filename }}"

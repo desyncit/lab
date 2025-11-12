@@ -1,0 +1,35 @@
+---
+- name: Include vars from role network
+  ansible.builtin.include_role:
+    name: network
+    vars_from: main
+
+- name: Pre tasks before we begin
+  block:
+    - name: Create service directory
+      ansible.builtin.file:
+        path: "{{ storage_path_services }}"
+        state: directory
+        seuser: system_u
+        serole: object_r
+        setype: etc_t
+        selevel: s0
+
+    - name: Setting ceph public monitor ip for bootstrap
+      when: 
+       - ansible_default_ipv4.address | ansible.utils.ipaddr(storage_network_mgmt)
+      ansible.builtin.set_fact:
+        storage_public_monitor_ip: "{{ ansible_default_ipv4.address }}"
+
+    - name: Grabbing cephadm binary
+      ansible.builtin.get_url:
+        url: "{{ storage_cephadm_url }}"
+        dest: "{{ storage_cephadm_path }}"
+        mode: "700"
+      register: storage_register_getcephadm
+
+    - name: Checking return of 
+
+
+      
+

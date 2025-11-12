@@ -1,0 +1,17 @@
+---
+namespace: desyncit
+name: storage
+version: 1.0.0
+readme: README.md
+repository: "https://github.com/desyncit/lab/tree/main/galaxy/desyncit/storage"
+authors:
+    - "Justin Herron <jherron@net-dev.net>"
+description: >-
+license:
+    - "CC-BY-4.0"
+dependencies:
+    "community.general": ">=10.7.3"
+    "ceph.automation": ""
+tags:
+    - collection
+    - infrastructure
