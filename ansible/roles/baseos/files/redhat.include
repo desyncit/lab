@@ -1,9 +1,0 @@
-
-function token(){
-        . /etc/vault/main/.tkp
-
-        local tk=$( bash /etc/profile.include.d/decrypt.sh | oathtool --totp --base32 - 2>/dev/null || echo $? )
-        
-        (( ${tk} == 1 )) && printf "missing yubikey\n" || echo ${tkp}${tk} 
-	return 0
-}

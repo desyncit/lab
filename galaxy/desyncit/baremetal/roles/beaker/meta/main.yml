@@ -1,0 +1,8 @@
+---
+galaxy_info:
+  author: 'Justin Herron'
+  description: 'Role used to interface with beaker-server'
+  license: 'CC-BY-4.0'
+  min_ansible_version: "2.9"
+  galaxy_tags: []
+dependencies: []

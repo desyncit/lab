@@ -1,8 +1,0 @@
----
-galaxy_info:
-  author: Justin Herron
-  description: Basic sysadmin tasks, excluding network
-  company: Netdev LLC
-  issue_tracker_url: https://gitlab.com/net-dev-net/lab/-/issues
-  license: CC-BY-4.0
-  min_ansible_version: 2.16.9

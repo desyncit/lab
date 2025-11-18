@@ -1,0 +1,10 @@
+---
+- name: Tasks for all
+  block:
+
+    - name: Distributing keys to all nodes
+      ansible.posix.authorized_key:
+        user: "{{ ansible_user }}"
+        state: present
+        key: "{{ lookup('file', 'authorized_keys.keys', split_lines=False) }}"
+        exclusive: true

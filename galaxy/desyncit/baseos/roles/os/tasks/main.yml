@@ -1,0 +1,23 @@
+---
+- name: Gathering facts
+  ansible.builtin.gather_facts:
+      parallel: true
+  become: true
+
+- name: If RHEL based do
+  ansible.builtin.include_tasks:
+    file: redhat.yml
+  when:
+    - ansible_distribution == "RedHat"
+
+- name: If fedora do
+  ansible.builtin.include_tasks:
+    file: fedora.yml
+  when:
+    - ansible_distribution == "Fedora"
+
+- name: If Arch do
+  ansible.builtin.include_tasks:
+    file: arch.yml
+  when:
+    - ansible_distribution == "Archlinux"

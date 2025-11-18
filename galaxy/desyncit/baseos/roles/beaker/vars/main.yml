@@ -1,9 +1,0 @@
----
-beaker_distro_dict:
-  - { name: RedHatEnterpriseLinux9, id: 1 }
-  - { name: CentOSStream9, id: 2 }
-beaker_ks_rhsm_activtionkey: ""
-beaker_ks_rhsm_release: ""
-beaker_ks_rhsm_org: ""
-# template variables
-beaker_ks_rootpw: "{{ 'change_me_or_you_will_get_hacked' | ansible.builtin.password_hash }}"
