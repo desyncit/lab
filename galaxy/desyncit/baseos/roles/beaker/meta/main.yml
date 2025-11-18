@@ -1,8 +1,0 @@
----
-galaxy_info:
-  author: 'Justin Herron'
-  description: 'Bootstrap the baremetal chassis'
-  license: 'CC-BY-4.0'
-  min_ansible_version: "2.9"
-  galaxy_tags: []
-dependencies: []
