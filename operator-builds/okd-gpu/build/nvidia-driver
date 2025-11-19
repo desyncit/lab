@@ -1,0 +1,487 @@
+#!/bin/bash
+set -eux
+
+RUN_DIR=/run/nvidia
+PID_FILE=${RUN_DIR}/${0##*/}.pid
+DRIVER_VERSION="570.169"
+KERNEL_UPDATE_HOOK=/run/kernel/postinst.d/update-nvidia-driver
+KERNEL_TYPE=kernel
+DNF_RELEASEVER=${DNF_RELEASEVER:-""}
+KOJI_BASE_URL=https://kojihub.stream.centos.org/kojifiles
+NUM_VGPU_DEVICES=0
+
+# to pass args into the nvidia driver
+NVIDIA_MODULE_PARAMS=()
+NVIDIA_UVM_MODULE_PARAMS=()
+NVIDIA_MODESET_MODULE_PARAMS=()
+NVIDIA_PEERMEM_MODULE_PARAMS=()
+
+KERNEL_ARCH=$(uname -m)
+
+TARGETARCH=${KERNEL_ARCH}
+DRIVER_ARCH=${TARGETARCH}
+
+SCRIPT_DIR=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
+
+printf "DRIVER_ARCH is $DRIVER_ARCH\n"
+printf "SCRIPT_DIR is %s\n" $SCRIPT_DIR
+printf "PWD is %s\n" ${PWD}
+
+_update_package_cache() {
+   echo "Updating the package cache..."
+     if ! dnf makecache; then
+       printf "FATAL: failed to reach package repositories.\n"
+       exit 1
+     fi
+}
+
+_cleanup_package_cache() {
+   echo "Cleaning up the package cache..."
+   dnf clean all
+ }
+
+_resolve_kernel_version() {
+    echo "Resolving Linux kernel version..."
+    local version=$(uname -r)
+    if [ -z "${version}" ]; then
+        echo "Could not resolve Linux kernel version" >&2
+        return 1
+    fi
+
+    KERNEL_VERSION="${version}"
+    echo "Proceeding with Linux kernel version ${KERNEL_VERSION}"
+    return 0
+}
+
+_install_prerequisites() (
+
+    _resolve_kernel_version
+
+    local tmp_dir=$(mktemp -d)
+
+    KERNEL_RPM_VERSION=${KERNEL_VERSION%-*}
+    KERNEL_RPM_RELEASE=${KERNEL_VERSION%.*}
+    KERNEL_RPM_RELEASE=${KERNEL_RPM_RELEASE#*-}
+    KERNEL_OS_VERSION=${KERNEL_RPM_RELEASE#*\.}
+    KERNEL_RPM_ARCH=${KERNEL_VERSION##*.}
+
+    KOJI_KERNEL_HEADERS_RPM=$KOJI_BASE_URL/packages/kernel/$KERNEL_RPM_VERSION/$KERNEL_RPM_RELEASE/$KERNEL_RPM_ARCH/kernel-headers-$KERNEL_VERSION.rpm
+    KOJI_KERNEL_DEVEL_RPM=$KOJI_BASE_URL/packages/kernel/$KERNEL_RPM_VERSION/$KERNEL_RPM_RELEASE/$KERNEL_RPM_ARCH/kernel-devel-$KERNEL_VERSION.rpm
+    KOJI_KERNEL_CORE_RPM=$KOJI_BASE_URL/packages/kernel/$KERNEL_RPM_VERSION/$KERNEL_RPM_RELEASE/$KERNEL_RPM_ARCH/kernel-core-$KERNEL_VERSION.rpm
+    KOJI_KERNEL_MOD_CORE_RPM=$KOJI_BASE_URL/packages/kernel/$KERNEL_RPM_VERSION/$KERNEL_RPM_RELEASE/$KERNEL_RPM_ARCH/kernel-modules-core-$KERNEL_VERSION.rpm
+
+
+    trap "rm -rf ${tmp_dir}" EXIT
+    cd ${tmp_dir}
+
+    echo "Installing elfutils..."
+    if ! dnf install -y elfutils-libelf.$DRIVER_ARCH elfutils-libelf-devel.$DRIVER_ARCH; then
+        echo "FATAL: failed to install elfutils packages."
+        exit 1
+    fi
+
+    rm -rf /lib/modules/${KERNEL_VERSION}
+    mkdir -p /lib/modules/${KERNEL_VERSION}/proc
+
+    echo "Installing Linux kernel headers..."
+    if ! dnf -y install kernel-headers-${KERNEL_VERSION}; then
+        echo "Failed to find kernel-headers-${KERNEL_VERSION} in repositories."
+        echo "Trying to download kernel-headers from koji..."
+        if ! dnf -y install $KOJI_KERNEL_HEADERS_RPM --setopt=install_weak_deps=False; then
+            echo "Failed to find kernel-headers-${KERNEL_VERSION} in koji."
+            exit 1 
+        fi
+    fi
+
+    echo "Installing Linux development files..."
+
+    if ! dnf -y install kernel-devel-${KERNEL_VERSION}; then
+        echo "Failed to find kernel-devel-${KERNEL_VERSION} in repositories."
+        echo "Trying to download kernel-devel from koji..."
+        if ! dnf -y install $KOJI_KERNEL_DEVEL_RPM --setopt=install_weak_deps=False; then
+            echo "Can't find kernel-devel-${KERNEL_VERSION}"
+            echo "Please try to update your kernel on the host system."
+            exit 1
+        fi
+    fi
+
+    ln -s /usr/src/kernels/${KERNEL_VERSION} /lib/modules/${KERNEL_VERSION}/build
+
+    echo "Installing Linux kernel-core files..."
+    if ! dnf -y download kernel-core-${KERNEL_VERSION} > /dev/null; then
+        echo "Failed to find kernel-core-${KERNEL_VERSION} in repositories."
+        echo "Trying to download kernel-core from koji..."
+        if ! dnf -y download $KOJI_KERNEL_CORE_RPM; then
+            echo "Can't find kernel-core-${KERNEL_VERSION}"
+            echo "Please try to update your kernel on the host system."
+            exit 1
+        fi
+    fi
+
+    echo "List kernel-core rpm version installed:"
+    rpm -qa | grep ^kernel-core || true
+    cat ./kernel-core-*.rpm | rpm2cpio | cpio -idm --quiet
+    rm ./*.rpm
+
+    echo "Installing Linux kernel-modules-core files..."
+    if ! dnf -y download kernel-modules-core-${KERNEL_VERSION}; then
+        echo "Failed to find kernel-modules-core-${KERNEL_VERSION} in repositories."
+        echo "Trying to download kernel-modules-core from koji..."
+        if ! dnf -y download $KOJI_KERNEL_MOD_CORE_RPM --setopt=install_weak_deps=False; then
+            echo "Can't find kernel-modules-core-${KERNEL_VERSION}"
+            echo "Please try to update your kernel on the host system."
+            exit 1
+        else
+            echo 'Kernel-modules-core installed from koji'
+        fi
+    fi
+    echo "List kernel-modules rpm version installed:"
+    rpm -qa | grep ^kernel-modules || true
+    cat ./kernel-modules-*.rpm | rpm2cpio | cpio -idm --quiet
+    rm ./*.rpm
+
+    mv lib/modules/${KERNEL_VERSION}/modules.* /lib/modules/${KERNEL_VERSION}
+    mv lib/modules/${KERNEL_VERSION}/kernel /lib/modules/${KERNEL_VERSION}
+
+    # Prevent depmod from giving a WARNING about missing files
+    touch /lib/modules/${KERNEL_VERSION}/modules.order
+    touch /lib/modules/${KERNEL_VERSION}/modules.builtin
+
+    depmod ${KERNEL_VERSION}
+
+    echo "Generating Linux kernel version string..."
+    if [ "$TARGETARCH" = "arm64" ]; then
+        gunzip -c /lib/modules/${KERNEL_VERSION}/vmlinuz | strings | grep -E '^Linux version' | sed 's/^\(.*\)\s\+(.*)$/\1/' > version
+    else
+        extract-vmlinux /lib/modules/${KERNEL_VERSION}/vmlinuz | strings | grep -E '^Linux version' | sed 's/^\(.*\)\s\+(.*)$/\1/' > version
+    fi
+    if [ -z "$(<version)" ]; then
+        strings ./lib/modules/${KERNEL_VERSION}/vmlinuz | grep 'gcc (GCC)' > version
+        if [ -z "$(<version)" ]; then
+            echo "Could not locate Linux kernel version string" >&2
+            return 1
+        fi
+    fi
+
+    mv version /lib/modules/${KERNEL_VERSION}/proc
+
+    local gcc_version=$(cat /lib/modules/${KERNEL_VERSION}/proc/version | grep -Eo "Red Hat ([0-9\.-]+)"  | grep -Eo "([0-9\.-]+)").${KERNEL_OS_VERSION}.${KERNEL_RPM_ARCH}
+    local current_gcc=$(rpm -qa gcc)
+
+    if ! [[ "${current_gcc}" =~ "gcc-${gcc_version}".* ]]; then
+        echo "kernel requires gcc version: 'gcc-${gcc_version}', current gcc version is '${current_gcc}'"
+        dnf install -y "gcc-${gcc_version}" | true
+        if [[ ${PIPESTATUS[0]} -ne 0 ]]; then
+            export IGNORE_CC_MISMATCH=1
+        fi
+    fi
+)
+
+_remove_prerequisites() {
+    true
+    if [ "${PACKAGE_TAG:-}" != "builtin" ]; then
+        dnf -y remove kernel-headers-${KERNEL_VERSION} kernel-devel-${KERNEL_VERSION}
+        # TODO remove module files not matching an existing driver package.
+    fi
+}
+
+_get_module_params() {
+    local base_path="/drivers"
+    # nvidia
+    if [ -f "${base_path}/nvidia.conf" ]; then
+       while IFS="" read -r param || [ -n "$param" ]; do
+           NVIDIA_MODULE_PARAMS+=("$param")
+       done <"${base_path}/nvidia.conf"
+       echo "Module parameters provided for nvidia: ${NVIDIA_MODULE_PARAMS[@]}"
+    fi
+    # nvidia-uvm
+    if [ -f "${base_path}/nvidia-uvm.conf" ]; then
+       while IFS="" read -r param || [ -n "$param" ]; do
+           NVIDIA_UVM_MODULE_PARAMS+=("$param")
+       done <"${base_path}/nvidia-uvm.conf"
+       echo "Module parameters provided for nvidia-uvm: ${NVIDIA_UVM_MODULE_PARAMS[@]}"
+    fi
+    # nvidia-modeset
+    if [ -f "${base_path}/nvidia-modeset.conf" ]; then
+       while IFS="" read -r param || [ -n "$param" ]; do
+           NVIDIA_MODESET_MODULE_PARAMS+=("$param")
+       done <"${base_path}/nvidia-modeset.conf"
+       echo "Module parameters provided for nvidia-modeset: ${NVIDIA_MODESET_MODULE_PARAMS[@]}"
+    fi
+}
+
+# Load the kernel modules and start persistenced.
+_load_driver() {
+
+    echo "Parsing kernel module parameters..."
+    _get_module_params
+
+    echo "Loading ipmi and i2c_core kernel modules..."
+    modprobe -a i2c_core ipmi_msghandler ipmi_devintf
+
+    echo "Loading NVIDIA driver kernel modules..."
+    set -o xtrace +o nounset
+    modprobe nvidia "${NVIDIA_MODULE_PARAMS[@]}"
+    modprobe nvidia-uvm "${NVIDIA_UVM_MODULE_PARAMS[@]}"
+    modprobe nvidia-modeset "${NVIDIA_MODESET_MODULE_PARAMS[@]}"
+    set +o xtrace -o nounset
+
+    echo "Starting NVIDIA persistence daemon..."
+    nvidia-persistenced --persistence-mode
+}
+
+_unload_driver() {
+    local rmmod_args=()
+    local nvidia_deps=0
+    local nvidia_refs=0
+    local nvidia_uvm_refs=0
+    local nvidia_modeset_refs=0
+    local nvidia_peermem_refs=0
+
+    echo "Stopping NVIDIA persistence daemon..."
+    if [ -f /var/run/nvidia-persistenced/nvidia-persistenced.pid ]; then
+        local pid=$(< /var/run/nvidia-persistenced/nvidia-persistenced.pid)
+
+        kill -SIGTERM "${pid}"
+        for i in $(seq 1 50); do
+            kill -0 "${pid}" 2> /dev/null || break
+            sleep 0.1
+        done
+        if [ $i -eq 50 ]; then
+            echo "Could not stop NVIDIA persistence daemon" >&2
+            return 1
+        fi
+    fi
+
+    echo "Unloading NVIDIA driver kernel modules..."
+    if [ -f /sys/module/nvidia_modeset/refcnt ]; then
+        nvidia_modeset_refs=$(< /sys/module/nvidia_modeset/refcnt)
+        rmmod_args+=("nvidia-modeset")
+        ((++nvidia_deps))
+    fi
+    if [ -f /sys/module/nvidia_uvm/refcnt ]; then
+        nvidia_uvm_refs=$(< /sys/module/nvidia_uvm/refcnt)
+        rmmod_args+=("nvidia-uvm")
+        ((++nvidia_deps))
+    fi
+    if [ -f /sys/module/nvidia/refcnt ]; then
+        nvidia_refs=$(< /sys/module/nvidia/refcnt)
+        rmmod_args+=("nvidia")
+    fi
+    if [ -f /sys/module/nvidia_peermem/refcnt ]; then
+        nvidia_peermem_refs=$(< /sys/module/nvidia_peermem/refcnt)
+        rmmod_args+=("nvidia-peermem")
+        ((++nvidia_deps))
+    fi
+    if [ ${nvidia_refs} -gt ${nvidia_deps} ] || [ ${nvidia_uvm_refs} -gt 0 ] || [ ${nvidia_modeset_refs} -gt 0 ] || [ ${nvidia_peermem_refs} -gt 0 ]; then
+        echo "Could not unload NVIDIA driver kernel modules, driver is in use" >&2
+        return 1
+    fi
+
+    if [ ${#rmmod_args[@]} -gt 0 ]; then
+        rmmod ${rmmod_args[@]}
+    fi
+    return 0
+}
+
+_install_driver() {
+    local install_args=()
+
+    echo "Installing NVIDIA driver kernel modules..."
+    cd /usr/src/nvidia-${DRIVER_VERSION}
+    rm -rf /lib/modules/${KERNEL_VERSION}/video
+
+    IGNORE_CC_MISMATCH=1 nvidia-installer --kernel-module-only --no-drm --ui=none --no-nouveau-check -m=kernel ${install_args[@]+"${install_args[@]}"}
+}
+
+# Mount the driver rootfs into the run directory with the exception of sysfs.
+_mount_rootfs() {
+    echo "Mounting NVIDIA driver rootfs..."
+    mount --make-runbindable /sys
+    mount --make-private /sys
+    mkdir -p ${RUN_DIR}/driver
+    mount --rbind / ${RUN_DIR}/driver
+
+    echo "Check SELinux status"
+    if [ -e /sys/fs/selinux ]; then
+        echo "SELinux is enabled"
+        echo "Change device files security context for selinux compatibility"
+        chcon -R -t container_file_t ${RUN_DIR}/driver/dev
+    else
+        echo "SELinux is disabled, skipping..."
+    fi
+}
+
+# Unmount the driver rootfs from the run directory.
+_unmount_rootfs() {
+    echo "Unmounting NVIDIA driver rootfs..."
+    if findmnt -r -o TARGET | grep "${RUN_DIR}/driver" > /dev/null; then
+        umount -l -R ${RUN_DIR}/driver
+    fi
+}
+
+# Write a kernel postinst.d script to automatically precompile packages on kernel update (similar to DKMS).
+_write_kernel_update_hook() {
+    if [ ! -d ${KERNEL_UPDATE_HOOK%/*} ]; then
+        return
+    fi
+
+    echo "Writing kernel update hook..."
+    cat > ${KERNEL_UPDATE_HOOK} <<'EOF'
+#!/bin/bash
+
+set -eu
+trap 'echo "ERROR: Failed to update the NVIDIA driver" >&2; exit 0' ERR
+
+NVIDIA_DRIVER_PID=$(< /run/nvidia/nvidia-driver.pid)
+
+export "$(grep -z DRIVER_VERSION /proc/${NVIDIA_DRIVER_PID}/environ)"
+nsenter -t "${NVIDIA_DRIVER_PID}" -m -- nvidia-driver update --kernel "$1"
+EOF
+    chmod +x ${KERNEL_UPDATE_HOOK}
+}
+
+_shutdown() {
+    if [ -f /var/log/nvidia-installer.log ]; then
+        echo ***
+        cat /var/log/nvidia-installer.log
+        echo ***
+    fi
+    if _unload_driver; then
+        _unmount_rootfs
+        rm -f ${PID_FILE} ${KERNEL_UPDATE_HOOK}
+        return 0
+    fi
+    return 1
+}
+
+
+_apply_patch () {
+    # Apply a single *.patch file that has been mounted to /patch
+    if [ -d /patch ]; then
+        # Exit if multiple patches are found
+        if [ $(ls -1 /patch/*.patch | wc -l) -gt 1 ]; then
+            echo "Multiple patches found, only one patch is supported"
+            exit 1
+        fi
+        for patch in /patch/*.patch; do
+            sh NVIDIA-Linux-$DRIVER_ARCH-$DRIVER_VERSION.run --apply-patch ${patch} -m=${KERNEL_TYPE}
+            # The patched installer has by default the file name ending '-custom.run'
+            PATCHED_SUFFIX="-custom"
+            echo -e "NVIDIA Software installer patched with '/patch/${patch}'\n"
+        done
+    fi
+}
+
+_prepare() {
+    _apply_patch
+
+    # Install the userspace components and copy the kernel module sources.
+    sh NVIDIA-Linux-$DRIVER_ARCH-$DRIVER_VERSION${PATCHED_SUFFIX:-}.run -x -m=${KERNEL_TYPE} && \
+        cd NVIDIA-Linux-$DRIVER_ARCH-$DRIVER_VERSION${PATCHED_SUFFIX:-} && \
+        sh /tmp/install.sh nvinstall && \
+        mkdir -p /usr/src/nvidia-$DRIVER_VERSION && \
+        mv LICENSE mkprecompiled ${KERNEL_TYPE} /usr/src/nvidia-$DRIVER_VERSION && \
+        sed '9,${/^\(kernel\|LICENSE\)/!d}' .manifest > /usr/src/nvidia-$DRIVER_VERSION/.manifest
+
+    echo -e "\n========== NVIDIA Software Installer ==========\n"
+    echo -e "Starting installation of NVIDIA driver version ${DRIVER_VERSION} for Linux kernel version ${KERNEL_VERSION}\n"
+}
+
+_prepare_exclusive() {
+    _prepare
+
+    exec 3> ${PID_FILE}
+    if ! flock -n 3; then
+        echo "An instance of the NVIDIA driver is already running, aborting"
+        exit 1
+    fi
+    echo $$ >&3
+
+    trap "echo 'Caught signal'; exit 1" HUP INT QUIT PIPE TERM
+    trap "_shutdown" EXIT
+
+    _unload_driver || exit 1
+    _unmount_rootfs
+}
+
+_build() {
+    # Build the driver
+    _install_driver
+}
+
+_load() {
+    _load_driver
+    _mount_rootfs
+    _write_kernel_update_hook
+
+    echo "Done, now waiting for signal"
+    sleep infinity &
+    trap "echo 'Caught signal'; _shutdown && { kill $!; exit 0; }" HUP INT QUIT PIPE TERM
+    trap - EXIT
+    while true; do wait $! || continue; done
+    exit 0
+}
+
+init() {
+    _install_prerequisites
+    _prepare_exclusive
+    _build
+    _load
+}
+
+build() {
+    _prepare
+    _build
+}
+
+load() {
+    _prepare_exclusive
+    _load
+}
+
+
+usage() {
+    cat >&2 <<EOF
+Usage: $0 COMMAND [ARG...]
+
+Commands: 
+  load
+EOF
+    exit 1
+}
+
+if [ $# -eq 0 ]; then
+    usage
+fi
+
+KERNEL_VERSION=$(uname -r)
+
+command=$1; shift
+case "${command}" in
+    init) options=$(getopt -l accept-license,max-threads: -o a:x:m: -- "$@") ;;
+    build) options=$(getopt -l accept-license,tag:,max-threads: -o a:t:m: -- "$@") ;;
+    load) options="" ;;
+    update) options=$(getopt -l kernel:,sign:,tag:,max-threads: -o k:s:t:m: -- "$@") ;;
+    *) usage ;;
+esac
+
+if [ $? -ne 0 ]; then
+    usage
+fi
+eval set -- "${options}"
+
+for opt in ${options}; do
+    case "$opt" in
+    -k | --kernel) KERNEL_VERSION=$2; shift 2 ;;
+    -m | --max-threads) MAX_THREADS=$2; shift 2 ;;
+    -x ) set -x; shift 1 ;;
+    --) shift; break ;;
+    esac
+done
+
+if [ $# -ne 0 ]; then
+    usage
+fi
+
+$command
