@@ -1,0 +1,9 @@
+os_gpg_packages:
+  - gnupg2
+  - gnupg2-smime
+  - libyubikey
+  - python3-yubikey-manager
+  - pam_yubico
+os_gpg_files:
+  - gpg-agent.conf
+  - gpg.conf
