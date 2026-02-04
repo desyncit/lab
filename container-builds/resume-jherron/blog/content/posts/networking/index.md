@@ -6,14 +6,14 @@ author = "Justin Herron"
 description = "This is a story about how a data center technician wrinkled his brain."
 +++
 
-[p1]: https://www.tampadevs.com/blog/2024/20240819-the-public-cloud-project
+[p1]: https://www.tampadevs.com/blog/2024/the-public-cloud-project
 
 ---
 
 ## Intro
 This is a story about all the "fun" I had with trying to understand the world in which computer network switches are born. Mainly through this beautiful box that is currently supporting the [Tampa Devs Public Cloud Project][p1].
 
-{{< figure src="images/MjAwXzAxOS5wbmcgMTQzODcK"  class="center" >}}
+{{< figure src="images/MjAwXzAxOS5wbmcgMTQzODcK"  class="center" width="600px" >}}
 
 In the early days of my career, there was this one type of network switch that I have been in love with. The infamous Top Of Rack switch(TOR)! A couple of years ago, whilst I working for Red Hat, I wanted to find a switch for my mini data center lab. But not just any switch, but a `Quanta T3048-LY9`! An awesome `40 Gbp/s leaf switch`!
 
@@ -57,10 +57,10 @@ Before we can get to the really cool stuff, we need to go over the basic types o
    The logical layout, shown below in `Figure 1.`, is a high level depiction, without getting into the i2c and PCI-E. Whilst `Figure 2.` shows a more detailed version of whats going on at a hardware layer inside a network switch.
 
 Figure 1.
-{{< figure src="images/aW1hZ2UwMS5wbmcgMjk5OTAK"  height="50%" width="50%" >}}
+{{< figure src="images/aW1hZ2UwMS5wbmcgMjk5OTAK"  width="600px" >}}
   
 Figure 2. 
-{{< figure src="images/MjAwXzAxNC5wbmcgMTMyMzEK"  height="50%" width="50%" >}}
+{{< figure src="images/MjAwXzAxNC5wbmcgMTMyMzEK"  width="600px" >}}
 
 ---
 
