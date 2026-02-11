@@ -20,6 +20,10 @@ storage:
     - path: /etc/mqm
       mode: 0755
   files:
+    - path: /etc/hostname
+      mode: 0644
+      contents:
+        inline: node01.irinet.net
     - path: /etc/mqm/secrets/admin
       mode: 0600
       contents:
@@ -50,7 +54,6 @@ storage:
           
           [ipv6]
           method=auto
-
 systemd:
   units:
     - name: ibm-mq.service

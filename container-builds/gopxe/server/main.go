@@ -13,7 +13,7 @@ func main() {
     r := gin.Default()
 
     const ipxeURL = "https://boot.ipxe.org/x86_64-efi/ipxe.efi"
-    const pxeBasePath = "/srv/scos"
+    const pxeBasePath = "/srv/"
   
     r.HEAD("/pxe/*filepath", func(c *gin.Context) {
        requestedPath := c.Param("filepath")
@@ -114,5 +114,5 @@ func main() {
                     "message": "pong", 
                }) 
     })
-    if err := r.Run(":80"); err != nil {log.Fatalf("Server failed to start: %v", err)} 
+    if err := r.Run(":8080"); err != nil {log.Fatalf("Server failed to start: %v", err)} 
 }
