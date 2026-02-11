@@ -1,8 +1,17 @@
+FROM docker.io/library/golang:1.24.4 as build
+COPY ./server/main.go /build/server/
+WORKDIR /build/
+
+RUN ls -R \
+    && go mod init server \
+    && go mod tidy \
+    && ls -R \
+    && go mod download \
+    && go mod verify \
+    && go build -C /build/server -o /go/bin/server ./main.go
+
 FROM docker.io/library/golang:1.24.4
-COPY webroot /opt/webroot
+COPY --from=build /go/bin/server /usr/bin/server
+COPY ./server/webroot /opt/webroot/
 WORKDIR /opt/webroot
-RUN  go mod download && go mod verify
-COPY . .
-RUN go build -o server
-EXPOSE 8080
-CMD [ "./server" ]
+ENTRYPOINT [ "/usr/bin/server" ]
