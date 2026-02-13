@@ -1,12 +1,15 @@
 IMAGE=quay.io/desync/gopxe:1.0.0
-HOSTPATH=/srv/http/
-IGNITION_FILES := $(patsubst nodes/%-butane.bu,/srv/http/scos/ignition-%.ign,$(wildcard nodes/*.bu))
+HOSTPATH=/srv/http
+IGNITION_FILES := $(patsubst nodes/%-butane.bu,$(HOSTPATH)/scos/ignition-%.ign,$(wildcard nodes/*.bu))
 
 
-default: build replace
+default: build volume run
 
 build:
 	podman build --no-cache --squash-all . -t $(IMAGE)
+
+push: build
+	podman push $(IMAGE)
 
 volume:
 	podman volume create \
@@ -24,5 +27,5 @@ run:
 
 ign: $(IGNITION_FILES)
 
-/srv/http/scos/ignition-%.ign: nodes/%-butane.bu
+$(HOSTPATH)/scos/ignition-%.ign: nodes/%-butane.bu
 	butane --strict --pretty < $< > $@

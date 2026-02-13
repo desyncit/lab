@@ -10,36 +10,11 @@ passwd:
         - wheel
         - sudo
 storage:
-  directories:
-    - path: /var/lib/mqm
-      mode: 0755
-      user:
-        id: 1001
-      group:
-        id: 0
-    - path: /etc/mqm
-      mode: 0755
   files:
     - path: /etc/hostname
       mode: 0644
       contents:
         inline: node03.irinet.net
-    - path: /etc/mqm/secrets/admin
-      mode: 0600
-      contents:
-        inline: admin123
-    - path: /etc/mqm/secrets/app
-      mode: 0600
-      contents:
-        inline: passw0rd
-    - path: /etc/mqm/mq.env
-      mode: 0600
-      contents:
-        inline: |
-          LICENSE=accept
-          MQ_QMGR_NAME=QM3
-          MQ_APP_PASSWORD=passw0rd
-          MQ_ADMIN_PASSWORD=admin123
     - path: /etc/NetworkManager/system-connections/enp0s31f6.nmconnection
       mode: 0600
       contents:
@@ -54,32 +29,3 @@ storage:
           
           [ipv6]
           method=auto
-
-systemd:
-  units:
-    - name: ibm-mq.service
-      enabled: true
-      contents: |
-        [Unit]
-        Description=IBM MQ Queue Manager
-        After=network-online.target
-        Wants=network-online.target
-
-        [Service]
-        EnvironmentFile=/etc/mqm/mq.env
-        ExecStartPre=-/usr/bin/podman pull icr.io/ibm-messaging/mq:latest
-        ExecStart=/usr/bin/podman run --rm --name ibmmq \
-          --env-file /etc/mqm/mq.env \
-          -p 1414:1414 \
-          -p 9443:9443 \
-          -v /var/lib/mqm:/mnt/mqm:Z \
-          -v /etc/mqm/secrets/admin:/run/secrets/admin:ro,Z \
-          -v /etc/mqm/secrets/app:/run/secrets/app:ro,Z \
-          icr.io/ibm-messaging/mq:latest
-        ExecStop=/usr/bin/podman stop ibmmq
-        Restart=always
-        RestartSec=10
-        TimeoutStartSec=300
-
-        [Install]
-        WantedBy=multi-user.target

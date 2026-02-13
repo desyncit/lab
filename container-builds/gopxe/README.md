@@ -1,7 +1,6 @@
 ### GOPXE
-Uses the concept of chainloading where some configurations enable PXE boot through UEFI and then proceed to 
-chainload iPXE for extended functionality.Tested this so far using the builtin tftp server inside 
-Mikrotik's RB4011 router. 
+
+Gopxe is a web + ipxe chainloader, using a tftp server hosted somewhere on the same flat network. 
 
 Embed a script into the ipxe binary in order to chain load to a webserver.
 ```
@@ -21,15 +20,15 @@ chain http://<replace-me-with-a-hostname>:8080/main.ipxe || goto retry
 
 make it 
 ```
-make bin-x86_64-efi/ipxe.efi EMBED=embed.ipxe
+$ make bin-x86_64-efi/ipxe.efi EMBED=embed.ipxe
 ```
 
+The Makefile included in this repository abstracts out the podman 
+dependencies.
 
+Default action of the `Makefile` is to `build` then create a volume and finnally run it.
 ```
-podman volume create \
-       --opt type=none \
-       --opt device=/srv/http 
-       --opt o=rbind pxeImages
+make
 ```
 
 
