@@ -1,0 +1,107 @@
+---
+- name: Create MQ data Directories
+  ansible.builtin.file:
+   path: "{{ item }}"
+   state: directory
+   mode: '0755'
+   owner: 1001
+   group: 0
+  loop:
+    - /var/lib/mqm
+    - /etc/mqm/secrets
+
+- name: Create MQ Secret directories
+  block:
+
+   - name: secret - admin
+     ansible.builtin.template:
+       src: etc-mqm-secrets-admin.j2
+       dest: /etc/mqm/secrets/admin
+        
+   - name: secret - app
+     ansible.builtin.template:
+       src: etc-mqm-secrets-app.j2
+       dest: /etc/mqm/secrets/app
+  
+- name: Grabing that sweet IBM MQ image
+  containers.podman.podman_image:
+    name: "{{ item.image }}"
+    state: present
+  loop: "{{ ibmmq_container }}"
+
+- name: Stop existing MQ container if running
+  containers.podman.podman_container:
+    name: "{{ item.name }}"
+    state: absent
+  loop: "{{ ibmmq_container }}"
+
+- name: Create secret from file
+  containers.podman.podman_secret:
+    name: "{{ item.name }}"
+    path: "{{ item.file }}"
+    state: present
+    force: true
+  loop:
+    - name: adminPass
+      file: /etc/mqm/secrets/admin
+    - name: appPass
+      file: /etc/mqm/secrets/app
+ 
+- name: Deploy MQ container
+  containers.podman.podman_container:
+    name: "{{ item.name }}"
+    image: "{{ item.image }}"
+    state: started
+    restart_policy: always
+    hostname: "{{ inventory_hostname }}"
+    ports:
+      - "{{ listener_port }}:{{ listener_port }}"
+      - "{{ web_port }}:{{ web_port }}"
+    volumes:
+      - /var/lib/mqm:/mnt/mqm:Z
+    secrets:
+      - "adminPass,type=env,target=MQ_ADMIN_PASSWORD"
+      - "appPass,type=env,target=MQ_APP_PASSWORD"
+    env:
+      LICENSE: accept
+      MQ_QMGR_NAME: "{{ qmgr_name }}"
+      MQ_ENABLE_METRICS: "{{ item.mq_enable_metrics | bool }}"
+  loop: "{{ ibmmq_container }}"
+
+- name: Generate systemd unit file for MQ container
+  containers.podman.podman_generate_systemd:
+    name: "{{ item.name }}"
+    dest: /etc/systemd/system/
+  loop: "{{ ibmmq_container }}"
+
+- name: Reload systemd
+  ansible.builtin.systemd:
+    daemon_reload: true
+
+- name: Bootstrap unit file
+  ansible.builtin.service:
+    name: "{{ 'container-' ~ item.name }}"
+    state: started
+    enabled: true
+  loop: "{{ ibmmq_container }}"
+
+- name: Create MQSC cluster configuration file
+  ansible.builtin.template:
+    src: qm-cluster.mqsc.j2
+    dest: "/tmp/{{ qmgr_name }}-cluster.mqsc"
+    mode: '0644'
+  tags:
+   - verify
+
+- name: Apply cluster configuration
+  ansible.builtin.shell: |
+     podman exec -i {{ item.name }} runmqsc {{ qmgr_name }} < /tmp/{{ qmgr_name }}-cluster.mqsc
+  args:
+    stdin: "{{ lookup('template', 'qm-cluster.mqsc.j2') }}"
+  loop: "{{ ibmmq_container }}"
+  register: mqsc_result
+  changed_when: "'AMQ8006I' in mqsc_result.stdout"
+
+- name: Verify the cluster state
+  ansible.builtin.include_tasks:
+    file: verify.yml

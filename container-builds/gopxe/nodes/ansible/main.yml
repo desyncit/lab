@@ -1,0 +1,22 @@
+---
+- name: Main playbook for ibmmq fun
+  hosts: kubes
+  gather_facts: yes
+  become: true
+
+  roles:
+    - common
+    - ibmmq
+
+  tasks:
+
+    - name: Nuke when notified
+      ansible.builtin.debug:
+        msg: "Notified to reboot cluster nodes"
+      changed_when: true
+      notify:
+        - Nuke it
+        - Wait for response
+      tags:
+        - never
+        - nuke

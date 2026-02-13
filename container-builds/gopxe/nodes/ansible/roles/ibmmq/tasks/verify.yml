@@ -1,0 +1,10 @@
+---
+- name: Check queue manager status
+  containers.podman.podman_container_exec:
+    name: "{{ qmgr_name }}"
+    command: "dspmq -m {{ qmgr_name }}"
+  register: qmgr_status
+
+- name: Display status
+  ansible.builtin.debug:
+    msg: "Queue Manager: {{ qmgr_status.stdout }}"
