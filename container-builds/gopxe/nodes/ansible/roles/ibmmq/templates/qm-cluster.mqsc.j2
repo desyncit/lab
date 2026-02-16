@@ -38,6 +38,8 @@ DEFINE CHANNEL(TO.{{ member.peer | upper }}) +
        TRPTYPE(TCP) +
        REPLACE
 
+START  CHANNEL(TO.{{ member.peer | upper }})
+
 ALTER  QMGR CHLAUTH(DISABLED)
 ALTER  QMGR CONNAUTH(' ')
 REFRESH SECURITY TYPE(CONNAUTH)
