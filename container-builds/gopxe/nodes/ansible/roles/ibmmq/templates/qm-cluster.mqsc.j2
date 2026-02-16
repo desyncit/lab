@@ -1,22 +1,45 @@
-{% for container in ibmmq_container %}
-{% if is_full_repo %}
-ALTER QMGR REPOS({{ container.cluster_name }})
+{%- for member in cluster_qmgrs %}
+{%- if member.host == inventory_hostname %}
+STOP LISTENER(SYSTEM.DEFAULT.LISTENER.TCP) +
+     IGNSTATE(YES)
+
+STOP LISTENER(SYSTEM.LISTENER.TCP) +
+     IGNSTATE(YES)
+
+DEFINE LISTENER(CLUSTER.LISTENER.TCP) +
+       TRPTYPE(TCP) +
+       PORT({{ member.cluster_listener_port }}) +
+       REPLACE
+
+START LISTENER(CLUSTER.LISTENER.TCP) +
+      IGNSTATE(YES)
+
+{% if member.cluster_full_repo %}
+ALTER QMGR REPOS({{ member.cluster_name | upper }})
 {% endif %}
 
-DEFINE LISTENER({{ qmgr_name }}_LST) TRPTYPE(TCP) PORT({{ listener_port }}) CONTROL(QMGR)
-START LISTENER({{ qmgr_name }}_LST)
+DEFINE CHANNEL(LOOPBACK.{{ member.name | upper }}) +
+       CHLTYPE(CLUSRCVR) +
+       CLUSTER({{ member.cluster_name | upper }}) +
+       CONNAME({{ member.host | upper }}) +
+       TRPTYPE(TCP) +
+       REPLACE
 
-DEFINE CHANNEL(TO.{{ qmgr_name }}) CHLTYPE(CLUSRCVR) TRPTYPE(TCP) +
-  CONNAME('{{ container.cluster_receiver_conname }}') +
-  CLUSTER({{ container.cluster_name }}) +
-  REPLACE
+DEFINE CHANNEL(TO.{{ member.name | upper }}) +
+       CHLTYPE(CLUSRCVR) +
+       CLUSTER({{ member.cluster_name | upper }}) +
+       TRPTYPE(TCP) +
+       REPLACE
 
-DEFINE CHANNEL(TO.{{ hostvars[cluster_sender_target].qmgr_name }}) CHLTYPE(CLUSSDR) TRPTYPE(TCP) +
-  CONNAME('{{ hostvars[cluster_sender_target].inventory_hostname }}({{ listener_port }})') +
-  CLUSTER({{ container.cluster_name }}) +
-  REPLACE
+DEFINE CHANNEL(TO.{{ member.peer | upper }}) +
+       CHLTYPE(CLUSSDR) +
+       CLUSTER({{ member.cluster_name | upper  }}) +
+       CONNAME({{ member.cluster_peer | upper }}) +
+       TRPTYPE(TCP) +
+       REPLACE
 
-DEFINE QLOCAL({{ container.cluster_name }}.QUEUE) CLUSTER({{ container.cluster_name }}) REPLACE
-
-ALTER QMGR DEADQ(SYSTEM.DEAD.LETTER.QUEUE)
+ALTER  QMGR CHLAUTH(DISABLED)
+ALTER  QMGR CONNAUTH(' ')
+REFRESH SECURITY TYPE(CONNAUTH)
+{% endif %}
 {% endfor %}

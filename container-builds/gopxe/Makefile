@@ -1,29 +1,27 @@
-IMAGE=quay.io/desync/gopxe:1.0.0
+TAG=1.0.0
+IMAGE=quay.io/desync/gopxe
 HOSTPATH=/srv/http
 IGNITION_FILES := $(patsubst nodes/%-butane.bu,$(HOSTPATH)/scos/ignition-%.ign,$(wildcard nodes/*.bu))
-
 
 default: build volume run
 
 build:
-	podman build --no-cache --squash-all . -t $(IMAGE)
+	podman build --no-cache --squash-all . -t $(IMAGE):$(TAG) -t $(IMAGE):latest
 
 push: build
-	podman push $(IMAGE)
+	podman push $(IMAGE):$(TAG) $(IMAGE):latest
 
 volume:
 	podman volume create \
 			--opt type=none \
 		        --opt device=$(HOSTPATH) \
-			--opt o=rbind \
-	       pxeImages
+			--opt o=rbind pxeImages
 
 replace:
-	podman run --rm --detach --replace --name=gopxe --volume pxeImages:/srv/ --network=host $(IMAGE)
+	podman run --rm --detach --replace --name=gopxe --volume pxeImages:/srv/ --network=host $(IMAGE):$(TAG)
 
 run:
-	podman run --rm --detach --name=gopxe --volume pxeImages:/srv/ --network=host $(IMAGE)
-
+	podman run --rm --detach --name=gopxe --volume pxeImages:/srv/ --network=host $(IMAGE):$(TAG)
 
 ign: $(IGNITION_FILES)
 
