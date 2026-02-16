@@ -1,21 +1,39 @@
-ansible_user: core
-listener_port: 1414
-web_port: 9443
-ibmmq_container:
-  - name: "{{ qmgr_name | lower }}"
+---
+cluster_qmgrs:
+  - name: QM1
+    peer: QM2
+    host: node01.irinet.net
     cluster_name: MQIRINET
-    cluster_receiver_conname: "{{ inventory_hostname }}({{ listener_port }})"
-    image: 'icr.io/ibm-messaging/mq:latest'
-    mq_enable_metrics: true
+    cluster_peer: node02.irinet.net
+    cluster_listener_port: 1414
+    cluster_web_port: 9443
+    cluster_full_repo: true
+  - name: QM2
+    peer: QM1
+    host: node02.irinet.net
+    cluster_name: MQIRINET
+    cluster_peer: node01.irinet.net
+    cluster_listener_port: 1414
+    cluster_web_port: 9443
+    cluster_full_repo: true
+  - name: QM3
+    peer: QM1
+    host: node03.irinet.net
+    cluster_name: MQIRINET
+    cluster_peer: node01.irinet.net
+    cluster_listener_port: 1414
+    cluster_web_port: 9443
+    cluster_full_repo: false
 
-ibmmq_admin: !vault |
+ibmmq_container_image: 'icr.io/ibm-messaging/mq:latest'
+ibmmq_container_admin: !vault |
                        $ANSIBLE_VAULT;1.1;AES256
                        38313633653030333466343534303735353339343966643130613237373834313362316432383836
                        3231346332666361376438333933626163353134373035620a626239613135366230323930626637
                        63336437353334323236623438373535633264366165363364646234363666623336366161616561
                        3134343739303532310a316236386237393439663430333562663464323531313362393234366133
                        3366
-ibmmq_app: !vault |
+ibmmq_container_app: !vault |
                        $ANSIBLE_VAULT;1.1;AES256
                        33303062653434616138646334323833303663303033666432373065363238356237303830316265
                        3865353065393065356662656134353466653437376237380a303231376138316663626664656333

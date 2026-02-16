@@ -13,5 +13,7 @@ RUN go mod init server \
 FROM docker.io/library/golang:1.24.4
 COPY --from=build /go/bin/server /usr/bin/server
 COPY ./server/webroot /opt/webroot/
+RUN useradd -s /sbin/nologin -r -m pxe
 WORKDIR /opt/webroot
+USER pxe
 ENTRYPOINT [ "/usr/bin/server" ]

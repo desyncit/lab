@@ -1,0 +1,28 @@
+---
+- name: Create MQSC cluster configuration file
+  ansible.builtin.template:
+    src: qm-cluster.mqsc.j2
+    dest: "/tmp/{{ item.name }}-cluster.mqsc"
+    mode: '0644'
+    force: true
+  loop: "{{ cluster_qmgrs }}"
+  when: item.host == inventory_hostname
+
+- name: Wait for default queue managers to become available
+  ansible.builtin.wait_for:
+    host: "{{ item.host }}"
+    port: "{{ item.cluster_listener_port }}"
+    timeout: 30
+    state: started
+  when: item.host  == inventory_hostname
+  loop: "{{ cluster_qmgrs }}"
+
+- name: Apply cluster configuration
+  ansible.builtin.shell: |
+     podman exec -i {{ item.name }} runmqsc {{ item.name }} < /tmp/{{ item.name }}-cluster.mqsc
+  args:
+    stdin: "{{ lookup('template', 'qm-cluster.mqsc.j2') }}"
+  loop: "{{ cluster_qmgrs }}"
+  when: item.host == inventory_hostname
+  register: mqsc_result
+  changed_when: "'AMQ8005I' in mqsc_result.stdout"
