@@ -3,7 +3,7 @@ IMAGE=quay.io/desync/gopxe
 HOSTPATH=/srv/http
 IGNITION_FILES := $(patsubst nodes/%-butane.bu,$(HOSTPATH)/scos/ignition-%.ign,$(wildcard nodes/*.bu))
 
-default: build volume run
+default: build volume
 
 build:
 	podman build --no-cache --squash-all . -t $(IMAGE):$(TAG) -t $(IMAGE):latest
@@ -13,9 +13,10 @@ push: build
 
 volume:
 	podman volume create \
-			--opt type=none \
-		        --opt device=$(HOSTPATH) \
-			--opt o=rbind pxeImages
+		--opt type=none \
+		--opt device=$(HOSTPATH) \
+		--opt o=rbind pxeImages \
+        || echo "Volume already exists"
 
 replace:
 	podman run --rm --detach --replace --name=gopxe --volume pxeImages:/srv/ --network=host $(IMAGE):$(TAG)

@@ -6,7 +6,6 @@
 
   roles:
     - common
-    - container-ibmmq
 
   tasks:
 
