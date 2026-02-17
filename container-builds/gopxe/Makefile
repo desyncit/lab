@@ -1,4 +1,4 @@
-TAG=1.0.0
+TAG=1.1.0
 IMAGE=quay.io/desync/gopxe
 HOSTPATH=/srv/http
 IGNITION_FILES := $(patsubst nodes/%-butane.bu,$(HOSTPATH)/scos/ignition-%.ign,$(wildcard nodes/*.bu))
