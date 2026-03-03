@@ -1,0 +1,40 @@
+{# template to bootstrap a three node cluster #}
+STOP LISTENER(SYSTEM.DEFAULT.LISTENER.TCP) +
+     IGNSTATE(YES)
+
+STOP LISTENER(SYSTEM.LISTENER.TCP) +
+     IGNSTATE(YES)
+
+DEFINE LISTENER(CLUSTER.LISTENER.TCP) +
+       TRPTYPE(TCP) +
+       PORT(1414) +
+       REPLACE
+
+START LISTENER(CLUSTER.LISTENER.TCP) +
+      IGNSTATE(YES)
+
+{% if qmgrs.neighbors | selectattr('full_repo', 'sameas', true) | list | length > 0 %}
+ALTER QMGR REPOS({{ mqclient_cluster[0].name | upper }})
+{% endif %}
+
+DEFINE CHANNEL(TO.{{ qmgrs.name | upper }}) +
+       CHLTYPE(CLUSRCVR) +
+       CLUSTER({{ mqclient_cluster[0].name | upper }}) +
+       CONNAME('{{ qmgrs.host }}(1414)') +
+       TRPTYPE(TCP) +
+       REPLACE
+
+{% for neighbor in qmgrs.neighbors %}
+DEFINE CHANNEL(TO.{{ qmgrs.peer | upper }}) +
+       CHLTYPE(CLUSSDR) +
+       CLUSTER({{ mqclient_cluster[0].name | upper }}) +
+       CONNAME('{{ neighbor.name }}({{ neighbor.listener_port }})') +
+       TRPTYPE(TCP) +
+       REPLACE
+
+START  CHANNEL(TO.{{ qmgrs.peer | upper }})
+{% endfor %}
+
+ALTER  QMGR CHLAUTH(DISABLED)
+ALTER  QMGR CONNAUTH(' ')
+REFRESH SECURITY TYPE(CONNAUTH)

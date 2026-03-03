@@ -1,0 +1,16 @@
+---
+- name: OS FAMILY IS REDHAT
+  when: ansible_os_family == "RedHat"
+  block:
+
+    - name: Include when install
+      ansible.builtin.include_tasks:
+        file: install.yml
+      tags:
+       - never
+
+    - name: Include when bootstrap
+      ansible.builtin.include_tasks:
+        file: create.yml
+      when: "{{ item.bootstrap | default(false) }}"
+      loop: "{{ mqclient_cluster }}"

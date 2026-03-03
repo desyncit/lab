@@ -1,0 +1,93 @@
+---
+- name: Create MQ data Directories
+  ansible.builtin.file:
+   path: "{{ item }}"
+   state: directory
+   mode: '0755'
+   owner: 1001
+   group: 0
+  loop:
+    - /var/lib/mqm
+    - /etc/mqm/secrets
+
+- name: Create MQ Secret directories
+  block:
+
+   - name: secret - admin
+     ansible.builtin.template:
+       src: etc-mqm-secrets-admin.j2
+       dest: /etc/mqm/secrets/admin
+        
+   - name: secret - app
+     ansible.builtin.template:
+       src: etc-mqm-secrets-app.j2
+       dest: /etc/mqm/secrets/app
+  
+- name: Grabing that sweet IBM MQ image
+  containers.podman.podman_image:
+    name: "{{ ibmmq_container_image }}"
+    state: present
+
+- name: Stop existing MQ container if running
+  containers.podman.podman_container:
+    name: "{{ item.name }}"
+    state: absent
+  loop: "{{ cluster_qmgrs }}"
+
+- name: Remove any systemd unit file
+  ansible.builtin.file:
+    path: "{{ '/etc/systemd/system/' ~ 'container-' ~ item.name }}"
+    state: absent
+  loop: "{{ cluster_qmgrs }}"
+  notify:
+    - Reload systemd
+
+- name: Create secret from file
+  containers.podman.podman_secret:
+    name: "{{ item.name }}"
+    path: "{{ item.file }}"
+    state: present
+    force: true
+  loop:
+    - name: adminPass
+      file: /etc/mqm/secrets/admin
+    - name: appPass
+      file: /etc/mqm/secrets/app
+ 
+- name: Deploy MQ container
+  containers.podman.podman_container:
+    name: "{{ item.name }}"
+    image: "{{ ibmmq_container_image }}"
+    state: started
+    restart_policy: always
+    hostname: "{{ item.host }}"
+    network: host
+    volumes:
+      - /var/lib/mqm:/mnt/mqm:Z
+    secrets:
+      - "adminPass,type=env,target=MQ_ADMIN_PASSWORD"
+      - "appPass,type=env,target=MQ_APP_PASSWORD"
+    env:
+      LICENSE: accept
+      MQ_QMGR_NAME: "{{ item.name }}"
+      MQ_ENABLE_METRICS: true
+  loop: "{{ cluster_qmgrs }}"
+  when: item.host == inventory_hostname
+
+- name: Generate systemd unit file for MQ container
+  containers.podman.podman_generate_systemd:
+    name: "{{ item.name }}"
+    dest: /etc/systemd/system/
+  loop: "{{ cluster_qmgrs }}"
+  when: item.host == inventory_hostname
+  notify:
+    - Reload systemd
+
+- name: Bootstrap unit file
+  ansible.builtin.systemd:
+    name: "{{ 'container-' ~ item.name }}"
+    daemon_reload: true
+    state: started
+    enabled: true
+  loop: "{{ cluster_qmgrs }}"
+  when: item.host == inventory_hostname

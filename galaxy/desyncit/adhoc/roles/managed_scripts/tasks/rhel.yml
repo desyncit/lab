@@ -1,0 +1,98 @@
+--- 
+- name: Debug hosts passed are being used for named list
+  ansible.builtin.debug:
+    verbosity: 3
+      msg: >-
+        {{ 
+           inventory_hostname 
+         | warn(
+             not inventory_hostname in item.target_hosts, 
+             inventory_hostname ~ ' ignored for ' ~ item.name
+           ) 
+        }}
+  loop: "{{ managed_scripts_manifest }}"
+
+- name: Assert vars of defined correctly
+  ansible.builtin.assert:
+    that:
+         - item.name | default('') | length > 0
+          - item.path | default('') | length > 0
+          - item.target_hosts is iterable  | default([])
+      loop: "{{ managed_scripts_manifest | selectattr('target_hosts', 'contains', inventory_hostname) }}"
+
+    - name: Assert subelement cron_job correct if cron_enable set
+      ansible.builtin.assert:
+        that:
+          - item.cron_job | default([]) | type_debug == "list" 
+        fail_msg: "Fail cron_job must be a named list"
+      when: item.cron_enable | default(false) | bool
+      loop: "{{ managed_scripts_manifest | selectattr('target_hosts', 'contains', inventory_hostname) }}"
+        
+    - name: File stat check on managed hosts
+      ansible.builtin.stat:
+        path: "{{ item.path }}"
+      register: register_stat_scripts
+      loop: >-
+         {{ managed_scripts_manifest | 
+            selectattr(
+               'target_hosts', 
+               'contains', 
+               inventory_hostname) 
+            | list 
+         }}
+      loop_control:
+        label: "{{ item.path }} on {{ inventory_hostname }}"
+ 
+    - name: Assert scripts exist on managed hosts
+      ansible.builtin.assert:
+        that:
+          - item.stat.exists | bool
+          - item.stat.executable | bool
+        fail_msg: "FAIL {{ item.item.path }} not found or missing exec  {{ inventory_hostname }}"
+        success_msg: "Assertions passed for {{ item.item.path }} found on {{ inventory_hostname }}"
+      loop: "{{ register_stat_scripts.results }}"
+
+  tasks:
+
+    - name: Execute scripts on managed hosts
+      become: true
+      become_user: "{{ item.user }}"
+      ansible.builtin.shell:
+        cmd: "{{ item.path }} {{ item.args | default(omit) }}"
+      register: managed_scripts_shell
+      changed_when: managed_scripts_shell.stdout | length > 0
+      loop: >-
+        {{ 
+            managed_scripts_manifest
+          | selectattr(
+              'target_hosts',
+              'contains',
+              inventory_hostname
+            )
+          | list 
+        }}
+      loop_control:
+        label: Executing {{ item.path }} on {{ inventory_hostname }}
+
+
+    - name: Run only in check mode
+      when: ansible_check_mode
+      become: true
+      become_user: "{{ item.user }}"
+      ansible.builtin.debug:
+        msg: >-
+          CHECK MODE [{{ inventory_hostname }}] 
+                      {{ item.path }} 
+                      {{ item.args 
+                       | default(omit) 
+                      }}
+      loop: >-
+        {{ 
+          managed_scripts_manifest  
+         | selectattr(
+             'target_hosts', 
+             'contains', 
+             inventory_hostname
+           ) 
+         | list 
+        }}
