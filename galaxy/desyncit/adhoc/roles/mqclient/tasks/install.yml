@@ -1,0 +1,83 @@
+---
+- name: ROOT LEVEL TASKs
+  become: true
+  become_user: root
+  block:
+   
+    - name: Create if directoy does not exist
+      ansible.builtin.file:
+        path: "{{ item.hrefto }}"
+        state: directory
+      loop: "{{ mqclient_install }}"
+
+    - name: Package facts
+      ansible.builtin.package_facts:
+        manager: "{{ ansible_pkg_mgr }}"
+
+    - name: Install needed packages
+      ansible.builtin.package:
+        state: present  
+        name: "{{ item.rpms }}"
+      loop: "{{ mqclient_install }}"
+ 
+    - name: Download tar ball on managed nodes
+      ansible.builtin.get_url:
+        url: >-
+          {{ item.href
+           ~ item.tag
+          }}
+        dest: "{{ item.hrefto }}"
+      loop: "{{ mqclient_install }}"
+
+    - name: Extract MQ fom TAR
+      ansible.builtin.unarchive:
+        remote_src: true
+        extra_opts: 
+          - --strip-components=1
+        src: >-
+          {{ item.hrefto
+           ~ '/'
+           ~ item.tag
+          }}
+        dest: "{{ item.hrefto }}"
+      loop: "{{ mqclient_install }}"
+
+    - name: Accept IBM MQ License
+      ansible.builtin.command:
+        argv:
+          - ./mqlicense.sh 
+          - -text_only 
+          - -accept
+        chdir: "{{ item.hrefto }}"
+      register: mqclient_license
+      changed_when: mqclient_license.stdout | length > 0
+      loop: "{{ mqclient_install }}"
+
+    - name: Inline edit repo file provided
+      ansible.builtin.lineinfile:
+        path: "{{ item.hrefto ~ '/IBM-MQ.repo' }}"
+        regexp: '^baseurl='
+        line: "{{ 'baseurl=file:///' ~ item.hrefto }}"
+      loop: "{{ mqclient_install }}"
+
+    - name: Add IBM MQ repo
+      ansible.builtin.copy:
+        remote_src: true
+        src: "{{ item.hrefto ~ '/IBM-MQ.repo' }}"
+        dest: /etc/yum.repos.d/IBM-MQ.repo
+        mode: '0644'
+      loop: "{{ mqclient_install }}"
+      notify:
+        - Update-repo-cache
+
+    - name: Install IBM MQ
+      ansible.builtin.package:
+        name: "{{ item.packages }}"
+      loop: "{{ mqclient_install }}"
+
+    - name: Add drop file to profile.d
+      ansible.builtin.lineinfile: 
+        create: true
+        state: present
+        path: /etc/profile.d/ibmmq.sh
+        line: 'export PATH=$PATH:/opt/mqm/bin:/opt/mqm/samp/bin'

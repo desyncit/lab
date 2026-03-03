@@ -1,0 +1,10 @@
+---
+- name: Check queue manager status
+  containers.podman.podman_container_exec:
+    name: "{{ item.name }}"
+    command: "dspmq -m {{ item.name }}"
+  register: qmgr_status
+  when: item.host == inventory_hostname
+  loop: "{{ cluster_qmgrs }}"
+  loop_control:
+    label: "Checking status of Queue Manager {{ item.name }}"

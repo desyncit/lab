@@ -1,0 +1,38 @@
+---
+- name: Bootstrap a Cluster
+  become: true
+  become_user: mqm
+  environment:
+    PATH: "/opt/mqm/bin:{{ ansible_env.PATH }}"
+    LD_LIBRARY_PATH: "/opt/mqm/lib64:/opt/mqm/lib:{{ ansible_env.LD_LIBRARY_PATH | default('') }}"
+  block:
+
+    - name: Generate the MQSC file on the remote node
+      ansible.builtin.template:
+        src: qm-cluster.mqsc.j2
+        dest: "/var/mqm/config/qm-{{ qmgrs.name }}-cluster.mqsc"
+        mode: '0644'
+      loop: >-
+        {{ mqclient_cluster 
+         | map(attribute='qmgrs') 
+         | sum(start=[]) 
+         | selectattr('host', 'equalto', inventory_hostname) 
+         | list 
+        }}
+      loop_control:
+        loop_var: qmgrs
+
+    - name: Apply configuration
+      queue_manager:
+        qmname: ["{{ qmgrs.name }}"] 
+        state: running
+        mqsc_file: "/var/mqm/config/qm-{{ qmgrs.name }}-cluster.mqsc"
+      loop: >-
+        {{ mqclient_cluster 
+         | map(attribute='qmgrs') 
+         | sum(start=[]) 
+         | selectattr('host', 'equalto', inventory_hostname) 
+         | list 
+        }}
+      loop_control:
+        loop_var: qmgrs
