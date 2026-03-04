@@ -14,3 +14,9 @@
         file: create.yml
       when: "{{ item.bootstrap | default(false) }}"
       loop: "{{ mqclient_cluster }}"
+      tags:
+       - never
+
+    - name: Assert cluster and channels are up
+      ansible.builtin.include_tasks:
+        file: validate.yml
