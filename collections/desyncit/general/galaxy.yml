@@ -1,0 +1,13 @@
+---
+namespace: desyncit
+name: general
+version: 1.0.0
+readme: README.md
+authors:
+- Justin Herron <jherron@net-dev.net>
+description: Collection of general roles
+license_file: CC-BY-4.0
+tags:
+  - infrastructure
+  - collection
+repository: http://example.com/repository

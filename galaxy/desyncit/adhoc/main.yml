@@ -1,91 +1,16 @@
 ---
 - name: Validate IBM MQ Deployment
   hosts: tests
+  gather_facts: true
 
   vars:
-     mq_version: 9.4.2.0
-     mq_struct: &upstream 
-       - tag: "{{ mq_version ~ '-IBM-MQ-Advanced-for-Developers-LinuxX64.tar.gz' }}"
-         href: https://public.dhe.ibm.com/ibmdl/export/pub/software/websphere/messaging/mqadv/
-         hrefto: "{{ '/var/tmp/MQserver-' ~ mq_version }}"
-     mqclient_system: &packages
-       rpms:
-        - xz
-        - tar
-        - vim 
-       packages:
-        - MQSeriesAMQP
-        - MQSeriesAMS
-        - MQSeriesClient
-        - MQSeriesFTAgent
-        - MQSeriesFTBase
-        - MQSeriesFTLogger
-        - MQSeriesFTService
-        - MQSeriesFTTools
-        - MQSeriesGSKit
-        - MQSeriesJava
-        - MQSeriesJRE
-        - MQSeriesMan
-        - MQSeriesRuntime
-        - MQSeriesSamples
-        - MQSeriesSDK
-        - MQSeriesServer
-        - MQSeriesWeb
-        - MQSeriesXRService
 
-     mq_cluster: &mqcluster
-       secrets:
-         - user: admin
-           key: !vault |
-                $ANSIBLE_VAULT;1.1;AES256
-                38313633653030333466343534303735353339343966643130613237373834313362316432383836
-                3231346332666361376438333933626163353134373035620a626239613135366230323930626637
-                63336437353334323236623438373535633264366165363364646234363666623336366161616561
-                3134343739303532310a316236386237393439663430333562663464323531313362393234366133
-                3366
-         - user: app
-           key: !vault |
-                $ANSIBLE_VAULT;1.1;AES256
-                33303062653434616138646334323833303663303033666432373065363238356237303830316265
-                3865353065393065356662656134353466653437376237380a303231376138316663626664656333
-                33643065366334303838643633636232393639626334353633326235643863643835316639366636
-                3834366564643030640a373936643236393366366362353036336338376162363266373039363935
-                6434
-       qmgrs:
-         - name: QM1
-           peer: QM2
-           host: node01
-           neighbors:
-             - name: node02
-               listener_port: 1414
-               web_port: 9443
-               full_repo: true
-         - name: QM2
-           peer: QM1
-           host: node02
-           neighbors:
-             - name: node01
-               listener_port: 1414
-               web_port: 9443
-               full_repo: true
-         - name: QM3
-           peer: QM1
-           host: node03
-           neighbors:
-             - name: node01
-               listener_port: 1414
-               web_port: 9443
-               full_repo: false
-
-     mqclient_install:
-       - name: v9420
-         <<: *upstream
-         <<: *packages
-
-     mqclient_cluster:
+     mq_cluster:
        - name: MQIRINET
-         bootstrap: true
-         <<: *mqcluster
+         qmgrs:
+           - name: NONE
+             host: node01
+             neighbors: []
 
   roles:
     - mqclient
