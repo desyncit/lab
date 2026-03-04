@@ -1,0 +1,20 @@
+---
+- name: Task to test this role
+  hosts: tests
+  pre_tasks:
+    - name: Create a mock dspmq binary for testing
+      copy:
+        dest: "/tmp/dspmq"
+        mode: '0755'
+        content: |
+          #!/bin/bash
+          echo "QMNAME($2) STATUS(Running)"
+          exit 0
+
+    - name: Ensure mock binary is in the PATH
+      set_fact:
+        ansible_env:
+          PATH: "/tmp:{{ ansible_env.PATH }}"
+
+  roles:
+   - mqclient 

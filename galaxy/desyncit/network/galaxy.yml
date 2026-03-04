@@ -1,0 +1,18 @@
+---
+namespace: desyncit
+name: network
+version: 1.0.0
+readme: README.md
+authors:
+- Justin Herron <jherron@net-dev.net>
+description: Collection of roles I use to automate network infrastructure I manage
+license:
+- CC-BY-4.0
+tags:
+  - collection
+  - infrastructure
+repository: https://github.com/desyncit/lab
+documentation: http://docs.example.com
+homepage: https://jherron.ontampa.dev
+issues: https://github.com/desyncit/lab/issues
+build_ignore: []

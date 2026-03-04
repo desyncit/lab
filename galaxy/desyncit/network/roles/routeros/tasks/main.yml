@@ -1,0 +1,18 @@
+---
+- name: Gather facts
+  community.routeros.facts:
+    gather_subset: all
+  register: routerosfacts
+
+- name: Initiate update of system
+  community.routeros.command:
+    commands:
+      - /system package update check-for-updates
+  register: system_update_check
+
+- name: New version found kickoff update
+  when: "'New version is available' in system_update_check.stdout[0]"
+  community.routeros.command:
+    commands:
+      - /system package update download
+      - /system package update install

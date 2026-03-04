@@ -1,6 +1,0 @@
----
-- name: Task to test this role
-  hosts: localhost
-  roles:
-   - mqclient
-  

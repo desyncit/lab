@@ -1,0 +1,8 @@
+---
+- name: OS FAMILY IS REDHAT
+  when: ansible_os_family == "RedHat"
+  block:
+
+    - name: Assert cluster queue managers are up
+      ansible.builtin.include_tasks:
+        file: checks.yml

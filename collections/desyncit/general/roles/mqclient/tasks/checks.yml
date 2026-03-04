@@ -1,0 +1,37 @@
+---
+- name: VALIDATION
+  become: true
+  become_user: mqm
+  block:
+
+    - name: Get queue managers status
+      queue_manager:
+        qmname: "{{ qmgrs.name }}"
+        state: status
+      register: qm_status_result
+      loop: >-
+        {{  mq_cluster 
+          | map(attribute='qmgrs')
+          | flatten
+          | selectattr('host', 'equalto', inventory_hostname) 
+          | list 
+        }}
+      loop_control:
+        loop_var: qmgrs
+
+    - name: Assert Queue managers are up
+      ansible.builtin.assert:
+        that:
+          - status.qm_running | bool
+        fail_msg: "Assertion failed check {{ status.qm_name }}"
+        success_msg: "Assertion passed Queue Manager {{ status.qm_name }} on host {{ status.host }}"
+      loop: >-
+        {{ qm_status_result.results
+         | map(attribute='status')
+         | combine
+         | dict2items
+         | map(attribute='value')
+         | list
+         }}
+      loop_control:
+        loop_var: status

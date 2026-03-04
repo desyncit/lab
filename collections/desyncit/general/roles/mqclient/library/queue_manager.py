@@ -152,41 +152,40 @@ def command_crtmqm(qmname, module):
         71: "Operating system error (check permissions).",
         72: "Invalid Queue Manager name."
     }
-    error_hint = CRTMQM_ERRORS.get(rc, "Unknown error")
+    hint = CRTMQM_ERRORS.get(rc, "Unknown error, (check stderr)")
     module.fail_json(
-        msg=f"Failed to create {qmname}: {error_hint}",
+        msg=f"Failed to create {qmname}",
         rc=rc,
-        stdout=stdout,
-        stderr=stderr
+        stdout=stderr,
+        hint=hint
     )
 
 def command_runmqsc(qmname, module, command=None, mqsc_file=None):
     args = ['runmqsc']
     data_input = None
 
+    RUNMQSC_ERRORS = {
+          20: "Argument supplied to command runmqsc is invalid (AMQ7027E)",
+         127: "runmqsc binary not found in PATH (ENOENT)"
+    }
+
     if module.check_mode:
        args.append('-v')
-
     if mqsc_file:
        args.extend(['-f', mqsc_file])
     elif command:
        data_input = command
 
     args.append(qmname)
-
     rc, stdout, stderr = module.run_command(args, data=data_input)
 
     if rc == 10:
-       return {"changed": True, "msg": "AMQ8420I: Channel Status not found"}
-       
+       return {"changed": True, "msg": "Channel Status not found (AMQ8420I)"}
+
     if rc != 0:
-       error_hints = {
-          20:  "AMQ7027E: Argument supplied to command runmqsc is invalid",
-          127: "ENOENT: runmqsc binary not found in PATH"
-       }
-       hint = error_hints.get(rc, "See stderr for details")
+       hint = RUNMQSC_ERRORS.get(rc, "See stderr for details")
        module.fail_json(
-            msg=f"MQSC execution failed for {qmname}",
+            msg=f"Failed to execute runmqsc command on {qmname} (check stderr)",
             rc=rc,
             stderr=stdout,
             hint=hint
@@ -198,21 +197,23 @@ def command_dsmq(qmname, module):
     args.append('-m')
     args.append(qmname)
 
-    rc, stdout, stderr = module.run_command(args)
+    current_host = socket.gethostname()
 
+    DSPMQ_ERRORS = {
+      10: "No queue managers found or partially displayed",
+      20: "Critical MQ system error or permission denied",
+      72: f"Queue manager does not exist on this {current_host}",
+      127: "ENOENT: The 'dspmq' binary was not found in the system PATH"
+    }
+
+    rc, stdout, stderr = module.run_command(args)
     if rc != 0:
-       DSPMQ_ERRORS = {
-         10: "No queue managers found or partially displayed",
-         20: "Critical MQ system error or permission denied",
-         72: "Queue manager does not exist on this host",
-         127: "ENOENT: The 'dspmq' binary was not found in the system PATH"
-       }
        hint = DSPMQ_ERRORS.get(rc, "See stderr for details")
        module.fail_json(
             msg=f"MQSC execution failed for {qmname}",
-            rc=rc,    
+            rc=rc,
             stderr=stdout,
-            hint=hint 
+            hint=hint
        )
 
     target_state = module.params.get('state')
@@ -222,10 +223,10 @@ def command_dsmq(qmname, module):
        if stdout and 'STATUS(Ended' in stdout:
           if not dqueue:
              module.fail_json(
-                 msg=f"Queue Manager {qmname} is in an Ended state.",
+                 msg=f"Queue Manager {qmname} is in an ended state",
                  rc=rc,
                  stderr=stdout,
-                 hint="Check /var/mqm/errors/AMQERR01.LOG."
+                 hint=hint
              )
     return bool(stdout and 'STATUS(Running)' in stdout)
 
@@ -249,18 +250,24 @@ def command_strmqm(qmname, module):
         71: "Authentication error or missing permissions to start QM.",
         72: "Queue Manager name is invalid or not found."
     }
-    error_hint = STRMQM_ERRORS.get(rc, "See stderr for details")
+    hint = STRMQM_ERRORS.get(rc, "See stderr for details")
     module.fail_json(
-        msg=f"Failed to start {qmname}: {error_hint}",
+        msg=f"Failed to start {qmname}",
         rc=rc,
-        stderr=stdout
+        stderr=stdout,
+        hint=hint
     )
 
 def command_endmqm(qmname, module):
     args = ['endmqm']
-    args.append('-i')
+    args.append('-c')
     args.append(qmname)
-
+    
+    ENDMQM_ERRORS = {
+        16: "Unexpected error during shutdown. Check /var/mqm/errors.",
+        71: "Permission denied (are you in the mqm group?).",
+        72: "Queue Manager not found."
+    }
     if module.check_mode:
         return {"changed": True, "msg": f"Queue Manager {qmname} would be stopped immediately."}
 
@@ -270,23 +277,25 @@ def command_endmqm(qmname, module):
     if rc == 40:
         return {"changed": False, "msg": f"Queue Manager {qmname} is already stopping or stopped."}
 
-    ENDMQM_ERRORS = {
-        16: "Unexpected error during shutdown. Check /var/mqm/errors.",
-        71: "Permission denied (are you in the mqm group?).",
-        72: "Queue Manager not found."
-    }
-    error_hint = ENDMQM_ERRORS.get(rc, "See stderr for details")
+    hint = ENDMQM_ERRORS.get(rc, "See stderr for details")
     module.fail_json(
         msg=f"Failed to stop {qmname}: {error_hint}",
         rc=rc,
-        stderr=stdout
+        stderr=stdout,
+        hint=hint
     )
 
 def command_dltmqm(qmname, module):
     args = ['dltmqm']
     args.append('-z')
     args.append(qmname)
- 
+
+    DLTMQM_ERRORS = {
+        16: "Unexpected error. Check if the QM is still running.",
+        71: "Permission denied.",
+        72: "Queue Manager not found."
+    }
+
     if module.check_mode:
         return {"changed": True, "msg": f"Queue Manager {qmname} would be deleted."}
     if module.params.get('_ansible_verbosity', 0) > 2:
@@ -299,20 +308,17 @@ def command_dltmqm(qmname, module):
     command_endmqm(qmname, module)
 
     rc, stdout, stderr = module.run_command(args)
-
     if rc == 0:
         return {"changed": True, "msg": f"Queue Manager {qmname} deleted."} 
-    DLTMQM_ERRORS = {
-        16: "Unexpected error. Check if the QM is still running.",
-        71: "Permission denied.",
-        72: "Queue Manager not found."
-    }    
-    error_hint = DLTMQM_ERRORS.get(rc, f"See stderr for details")
+
+    hint = DLTMQM_ERRORS.get(rc, f"See stderr for details")
     module.fail_json(
-           msg=f"Deletion failed: {error_hint}", 
-           rc=rc, 
-           stderr=stdout
+           msg=f"Deletion failed",
+           rc=rc,
+           stderr=stdout,
+           hint=hint
     )
+
 def state_status(qmname, module):
     def check_listener_port(host, port, timeout=10):
         try:
@@ -340,7 +346,6 @@ def state_status(qmname, module):
         qm_status['socket_polled'] = True
     else:
         qm_status['listener_running'] = True
-        qm_status['socket_polled'] = False
 
     msg = (
        f"Host: {current_host}\n"
@@ -369,37 +374,36 @@ def run_module():
     mq_environment()
     ops = {
         "status": state_status,
-        "present": state_started,
         "started": state_started,
         "stopped": state_stopped,
         "absent": state_absent
     }
     qmgr_attributes = dict(
         qmname=dict(
-                     type='str', 
-                     required=True, 
-                     max_len=48
+          type='str', 
+          required=True, 
+          max_len=48
         ),
         description=dict(
-                     type='str', 
-                     required=False
+          type='str', 
+          required=False
         ),
         listener_port=dict(
-                      type='int', 
-                      required=False
+          type='int', 
+          required=False
         ),
         mqsc_file=dict(
-                     type='str', 
-                     required=False
+          type='str', 
+          required=False
         ),
         state=dict(
-                     type='str', 
-                     required=True,
-                     choices=list(ops.keys())
+          type='str', 
+          required=True,
+          choices=list(ops.keys())
         ),
         yes_i_really_really_mean_it=dict(
-                     type='bool', 
-                     default=False
+          type='bool', 
+          default=False
         ),
     )
     module = AnsibleModule(
