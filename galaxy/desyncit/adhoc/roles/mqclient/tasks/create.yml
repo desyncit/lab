@@ -2,9 +2,6 @@
 - name: Bootstrap a Cluster
   become: true
   become_user: mqm
-  environment:
-    PATH: "/opt/mqm/bin:{{ ansible_env.PATH }}"
-    LD_LIBRARY_PATH: "/opt/mqm/lib64:/opt/mqm/lib:{{ ansible_env.LD_LIBRARY_PATH | default('') }}"
   block:
 
     - name: Generate the MQSC file on the remote node

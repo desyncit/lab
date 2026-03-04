@@ -1,0 +1,21 @@
+---
+- name: VALIDATION
+  become: true
+  become_user: mqm
+  block:
+
+    - name: Validate Cluster state
+      queue_manager:
+        qmname: "{{ qmgrs.name }}"
+        state: "{{ set_state }}"
+        yes_i_really_really_mean_it: false
+      register: mq_command_out
+      loop: >-
+        {{  mqclient_cluster 
+          | map(attribute='qmgrs') 
+          | sum(start=[]) 
+          | selectattr('host', 'equalto', inventory_hostname) 
+          | list 
+        }}
+      loop_control:
+        loop_var: qmgrs
