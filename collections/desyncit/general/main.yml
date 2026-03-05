@@ -8,9 +8,14 @@
      mq_cluster:
        - name: MQIRINET
          qmgrs:
-           - name: NONE
+           - name: QM1
              host: node01
-             neighbors: []
+             listener_port: 1414
+           - name: QM2
+             host: node02
+           - name: QM3
+             host: node03
+             listener_port: 1414
 
   roles:
     - mqclient

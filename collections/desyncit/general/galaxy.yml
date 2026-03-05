@@ -6,7 +6,8 @@ readme: README.md
 authors:
 - Justin Herron <jherron@net-dev.net>
 description: Collection of general roles
-license_file: CC-BY-4.0
+license: 
+  - CC-BY-4.0
 tags:
   - infrastructure
   - collection
