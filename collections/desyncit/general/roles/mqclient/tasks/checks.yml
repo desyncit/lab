@@ -8,7 +8,8 @@
       queue_manager:
         qmname: "{{ qmgrs.name }}"
         state: status
-      register: qm_status_result
+        listener_port: "{{ qmgrs.listener_port | default(1414) }}"
+      register: qm_status_registered
       loop: >-
         {{  mq_cluster 
           | map(attribute='qmgrs')
@@ -18,20 +19,30 @@
         }}
       loop_control:
         loop_var: qmgrs
+      retries: "{{ retries | default(2) }}"
+      delay: "{{ retry_delay | default(10) }}"
+      until: 
+        - ( qm_status_registered.status[qmgrs.name].qm_running is defined and
+            qm_status_registered.status[qmgrs.name].listener_reachable is defined)
 
     - name: Assert Queue managers are up
       ansible.builtin.assert:
         that:
-          - status.qm_running | bool
-        fail_msg: "Assertion failed check {{ status.qm_name }}"
-        success_msg: "Assertion passed Queue Manager {{ status.qm_name }} on host {{ status.host }}"
+          - item.qm_running | bool
+        fail_msg: "Assertion failed check {{ item.qm_name }}"
       loop: >-
-        {{ qm_status_result.results
-         | map(attribute='status')
-         | combine
-         | dict2items
-         | map(attribute='value')
+        {{ qm_status_registered.results 
+         | map(attribute='stdout') 
+         | list 
+        }}
+
+    - name: Assert Queue managers are up
+      ansible.builtin.assert:
+        that:
+          - item.listener_reachable | bool
+        fail_msg: "Assertion failed listen socket {{ item.qm_name }} unreachable"
+      loop: >-
+        {{ qm_status_registered.results
+         | map(attribute='stdout')
          | list
-         }}
-      loop_control:
-        loop_var: status
+        }}
