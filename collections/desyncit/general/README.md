@@ -1,3 +1,5 @@
 # Ansible Collection - desyncit.general
 
-Documentation for the collection.
+- Roles
+  - mananaged scripts - manages the execution of scripts on remote linux hosts.  
+  - mqclient - manages basic functions of queue managers in an mq cluster.  
