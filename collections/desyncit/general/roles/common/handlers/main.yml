@@ -1,0 +1,17 @@
+---
+- name: Reboot it
+  ansible.builtin.reboot:
+    reboot_command: 'systemctl reboot --no-wall'
+  register: nuked
+
+- name: Wait for response
+  ansible.builtin.wait_for:
+    host: "{{ inventory_hostname }}"
+    search_regex: OpenSSH
+    port: '22'
+    delay: '10'
+  when: nuked.changed
+
+- name: Reload systemd
+  ansible.builtin.systemd:
+    daemon_reload: true

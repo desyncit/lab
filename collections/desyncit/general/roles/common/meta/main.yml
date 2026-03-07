@@ -1,0 +1,12 @@
+---
+galaxy_info:
+  author: Justin Herron
+  description: role for common stuff
+  company: Nedev LLC
+  issue_tracker_url: https://github.com/desyncit/lab/issues
+  license: CC-BY-4.0
+  min_ansible_version: 2.16
+  galaxy_tags:
+    - common
+    - infrastructure
+dependencies: []
