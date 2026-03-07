@@ -41,9 +41,9 @@ jobs:
           fi
           for coll in ${CHANGED_COLLECTIONS}; do
             if [ -f "${coll}/galaxy.yml" ]; then
-              printf "-\033[%db\n" ${#coll}
+              printf "+-\033[%db-+\n" ${#coll}
               echo "Changes detected in: ${coll}"
-              printf "-\033[%db\n" ${#coll}
+              printf "+-\033[%db-+\n" ${#coll}
               ansible-galaxy collection build "${coll}" --output-path ./build_artifact
 
               TARBALL=$(find ./build_artifact -name "*.tar.gz" | head -n 1)
