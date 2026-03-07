@@ -30,12 +30,12 @@
          - "results {{ managed_scripts_repo_registered.results }}"
 
 - name: BLOCK SWITCH IF IN CHECK
-  when: not ansible_check_mode
   block:
   
     - name: Execute scripts on remote node
       become: true
       become_user : "{{ wm1sc1.user }}"
+      when: not ansible_check_mode
       ansible.builtin.script: "{{ wm1sc1.path }}"
       loop: >-
         {{ managed_scripts_manifest
