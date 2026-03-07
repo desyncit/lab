@@ -17,6 +17,8 @@
        source: git@github.com:desyncit/toolbox.git
        target_hosts:
          - node01
+         - node02
+         - node03
        user: xasfg
        path: /var/tmp/toolbox/bash/bin/dummy.sh
        cron_enable: false
