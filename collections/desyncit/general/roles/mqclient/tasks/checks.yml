@@ -8,7 +8,7 @@
       queue_manager:
         qmname: "{{ qmgrs.name }}"
         state: status
-        listener_port: "{{ qmgrs.listener_port | default(1414) }}"
+        listener_port: "{{ qmgrs.listener_port | default(omit) | int }}"
       register: qm_status_registered
       loop: >-
         {{  mq_cluster 
@@ -19,30 +19,35 @@
         }}
       loop_control:
         loop_var: qmgrs
-      retries: "{{ retries | default(2) }}"
-      delay: "{{ retry_delay | default(10) }}"
-      until: 
-        - ( qm_status_registered.status[qmgrs.name].qm_running is defined and
-            qm_status_registered.status[qmgrs.name].listener_reachable is defined)
+      retries: "{{ mqclient_retries | default(2) }}"
+      delay: "{{ mqclient_retry_delay | default(1) }}"
+      until:
+        - qm_status_registered.status is defined
+        - qm_status_registered.status[qmgrs.name].qm_running | bool
 
-    - name: Assert Queue managers are up
+    - name: Assert Queue managers are up via dspmq
       ansible.builtin.assert:
         that:
-          - item.qm_running | bool
-        fail_msg: "Assertion failed check {{ item.qm_name }}"
-      loop: >-
-        {{ qm_status_registered.results 
-         | map(attribute='stdout') 
-         | list 
-        }}
-
-    - name: Assert Queue managers are up
-      ansible.builtin.assert:
-        that:
-          - item.listener_reachable | bool
-        fail_msg: "Assertion failed listen socket {{ item.qm_name }} unreachable"
+          - cw1fyx.qm_running | bool
+        fail_msg: "Assertion failed check {{ cw1fyx.qm_name }}"
       loop: >-
         {{ qm_status_registered.results
          | map(attribute='stdout')
          | list
         }}
+      loop_control:
+        loop_var: cw1fyx
+
+    - name: Assert Queue managers are up if listener_port provided
+      when: cw0k.qmgrs.listener_port is defined
+      ansible.builtin.assert:
+        that:
+          - cw0k.status[cw0k.qmgrs.name].listener_reachable | bool
+        fail_msg: >-
+          Assertion failed listen socket
+          for {{ cw0k.qmgrs.name }}
+          on {{ cw0k.qmgrs.host }}
+          returned unreachable
+      loop: "{{ qm_status_registered.results }}"
+      loop_control:
+        loop_var: cw0k
