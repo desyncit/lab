@@ -216,6 +216,9 @@ def command_dsmq(qmname, module):
       127: "ENOENT: The 'dspmq' binary was not found in the system PATH"
     }
 
+    if module.check_mode:
+        return {"changed": True, "msg": f"Queue Manager {qmname} would have been checked."}
+
     rc, stdout, stderr = module.run_command(args)
     if rc != 0:
        hint = DSPMQ_ERRORS.get(rc, "See stderr for details")
@@ -372,6 +375,28 @@ def state_status(qmname, module):
        qm_status['socket_polled'] = True
     elif qm_status and not listener_port:
         qm_status['listener_reachable'] = True
+
+    if module.check_mode:
+       module.warn(f"CHECKMODE: status check on Queuemanager {qmname}")
+       checkmode_qm_running = True
+       checkmode_socket_polled = True
+       checkmode_listener_reachable = True
+       checkmode_host = socket.gethostname()
+
+       checkmode_qm_status = {
+         'qm_name': qmname,
+         'qm_running': checkmode_qm_running,
+         'host': checkmode_host,
+         'listener_reachable': checkmode_listener_reachable,
+         'socket_polled': checkmode_socket_polled
+       }
+
+       return {
+            "changed": False,
+            "stdout": checkmode_qm_status,
+            "status": {qmname: checkmode_qm_status},
+            "check_mode": True
+       }
 
     msg = (
        f"Host: {current_host}\n"

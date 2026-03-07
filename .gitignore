@@ -4,3 +4,4 @@
 **/facts.d
 **/vault.yml
 **/*keytab*
+**/__pycache__
