@@ -14,6 +14,7 @@ jobs:
     steps:
       - name: Check out code
         uses: actions/checkout@v4
+        fetch-depth: 0
 
       - name: Set up Python
         uses: actions/setup-python@v5
@@ -32,7 +33,7 @@ jobs:
           else
             CHANGED_FILES=$(git diff-tree --no-commit-id --name-only -r ${{ github.sha }})
           fi
-          CHANGED_COLLECTIONS=$(echo "$CHANGED_FILES" |  awk '/^collections\/desyncit/{print | "cut -d/ -f1,2,3 | sort -u"}'
+          CHANGED_COLLECTIONS=$(echo "$CHANGED_FILES" |  awk '/^collections\/desyncit/{print | "cut -d/ -f1,2,3 | sort -u"}')
           if [ -z "$CHANGED_COLLECTIONS" ]; then
             echo "No collections in collections/desyncit/ were changed. Exiting."
             exit 0
@@ -42,7 +43,7 @@ jobs:
               printf "-\033[%db\n" ${#coll}
               echo "Changes detected in: ${coll}"
               printf "-\033[%db\n" ${#coll}
-              ansible-galaxy collection build "${coll_dir}" --output-path ./build_artifact
+              ansible-galaxy collection build "${coll}" --output-path ./build_artifact
 
               TARBALL=$(find ./build_artifact -name "*.tar.gz" | head -n 1)
 
