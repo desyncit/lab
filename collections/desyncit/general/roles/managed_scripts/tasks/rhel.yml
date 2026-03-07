@@ -1,98 +1,74 @@
---- 
-- name: Debug hosts passed are being used for named list
-  ansible.builtin.debug:
-    verbosity: 3
-      msg: >-
-        {{ 
-           inventory_hostname 
-         | warn(
-             not inventory_hostname in item.target_hosts, 
-             inventory_hostname ~ ' ignored for ' ~ item.name
-           ) 
-        }}
-  loop: "{{ managed_scripts_manifest }}"
+---
+- name: Grabbing scripts from repo
+  run_once: true
+  delegate_to: localhost
+  block:
 
-- name: Assert vars of defined correctly
-  ansible.builtin.assert:
-    that:
-         - item.name | default('') | length > 0
-          - item.path | default('') | length > 0
-          - item.target_hosts is iterable  | default([])
-      loop: "{{ managed_scripts_manifest | selectattr('target_hosts', 'contains', inventory_hostname) }}"
-
-    - name: Assert subelement cron_job correct if cron_enable set
-      ansible.builtin.assert:
-        that:
-          - item.cron_job | default([]) | type_debug == "list" 
-        fail_msg: "Fail cron_job must be a named list"
-      when: item.cron_enable | default(false) | bool
-      loop: "{{ managed_scripts_manifest | selectattr('target_hosts', 'contains', inventory_hostname) }}"
-        
-    - name: File stat check on managed hosts
-      ansible.builtin.stat:
-        path: "{{ item.path }}"
-      register: register_stat_scripts
-      loop: >-
-         {{ managed_scripts_manifest | 
-            selectattr(
-               'target_hosts', 
-               'contains', 
-               inventory_hostname) 
-            | list 
-         }}
+    - name: Grabing remote source
+      ansible.builtin.git:
+        repo: "{{ ZmlsZQo.source }}"
+        dest: "{{ ZmlsZQo.dest }}"
+        separate_git_dir: "{{ ZmlsZQo.dest | dirname ~ '/.gitdir' }}"
+        clone: true
+        update: yes
+        single_branch: yes
+      register: managed_scripts_repo_registered
+      loop: "{{ managed_scripts_repo }}"
       loop_control:
-        label: "{{ item.path }} on {{ inventory_hostname }}"
- 
-    - name: Assert scripts exist on managed hosts
-      ansible.builtin.assert:
-        that:
-          - item.stat.exists | bool
-          - item.stat.executable | bool
-        fail_msg: "FAIL {{ item.item.path }} not found or missing exec  {{ inventory_hostname }}"
-        success_msg: "Assertions passed for {{ item.item.path }} found on {{ inventory_hostname }}"
-      loop: "{{ register_stat_scripts.results }}"
+        loop_var: ZmlsZQo
 
-  tasks:
+    - name: Running checks on inputs
+      ansible.builtin.include_tasks:
+        file: checks.yml
 
-    - name: Execute scripts on managed hosts
-      become: true
-      become_user: "{{ item.user }}"
-      ansible.builtin.shell:
-        cmd: "{{ item.path }} {{ item.args | default(omit) }}"
-      register: managed_scripts_shell
-      changed_when: managed_scripts_shell.stdout | length > 0
-      loop: >-
-        {{ 
-            managed_scripts_manifest
-          | selectattr(
-              'target_hosts',
-              'contains',
-              inventory_hostname
-            )
-          | list 
-        }}
-      loop_control:
-        label: Executing {{ item.path }} on {{ inventory_hostname }}
+  rescue:
 
-
-    - name: Run only in check mode
-      when: ansible_check_mode
-      become: true
-      become_user: "{{ item.user }}"
+    - name: Exception caught
       ansible.builtin.debug:
-        msg: >-
-          CHECK MODE [{{ inventory_hostname }}] 
-                      {{ item.path }} 
-                      {{ item.args 
-                       | default(omit) 
-                      }}
+        msg: 
+         - "Error fetching remote repo check if reachable"
+         - "results {{ managed_scripts_repo_registered.results }}"
+
+- name: BLOCK SWITCH IF IN CHECK
+  when: not ansible_check_mode
+  block:
+  
+    - name: Execute scripts on remote node
+      become: true
+      become_user : "{{ wm1sc1.user }}"
+      ansible.builtin.script: "{{ wm1sc1.path }}"
       loop: >-
-        {{ 
-          managed_scripts_manifest  
+        {{ managed_scripts_manifest
          | selectattr(
              'target_hosts', 
              'contains', 
-             inventory_hostname
-           ) 
+             inventory_hostname) 
          | list 
         }}
+      loop_control:
+        label: "Executing {{ wm1sc1.path }} as {{ wm1sc1.user }}"
+        loop_var: wm1sc1
+
+  rescue:
+
+    - name: Run only in check mode
+      become: true
+      become_user: "{{ bGttbAo.user }}"
+      when: ansible_check_mode
+      ansible.builtin.debug:
+        msg: >-
+         CHECK MODE DETECTED [{{ inventory_hostname }}]
+                              {{ bGttbAo.path }} 
+                              {{ bGttbAo.args 
+                               | default(omit) 
+                              }}
+      loop: >-
+        {{ managed_scripts_manifest  
+         | selectattr(
+             'target_hosts', 
+             'contains', 
+              inventory_hostname) 
+         | list 
+        }}
+      loop_control:
+        loop_var: bGttbAo

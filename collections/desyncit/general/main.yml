@@ -1,21 +1,25 @@
 ---
-- name: Validate IBM MQ Deployment
+- name: Run scripts on managed nodes
   hosts: tests
   gather_facts: true
 
   vars:
+    managed_scripts_repo:
+     - name: Toolbox repo
+       source: git@github.com:desyncit/toolbox.git
+       dest: /var/tmp/toolbox
+       update: yes
+       force: true
+       branch: main
 
-     mq_cluster:
-       - name: MQIRINET
-         qmgrs:
-           - name: QM1
-             host: node01
-             listener_port: 1414
-           - name: QM2
-             host: node02
-           - name: QM3
-             host: node03
-             listener_port: 1414
-
+    managed_scripts_manifest:
+     - name: Checkonline for target hosts
+       source: git@github.com:desyncit/toolbox.git
+       target_hosts:
+         - node01
+       user: xasfg
+       path: /var/tmp/toolbox/bash/bin/dummy.sh
+       cron_enable: false
+    
   roles:
-    - mqclient
+    - managed_scripts

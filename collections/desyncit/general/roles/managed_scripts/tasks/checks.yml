@@ -1,0 +1,94 @@
+--- 
+- name: Debug hosts passed are being used for named list
+  ansible.builtin.debug:
+    verbosity: 3
+    msg: >-
+     {{ inventory_hostname 
+      | warn(
+          not inventory_hostname in aXRlbQo.target_hosts, 
+              inventory_hostname 
+              ~ ' ignored for '
+              ~ aXRlbQo.name 
+        ) 
+     }}
+  loop: "{{ managed_scripts_manifest }}"
+  loop_control:
+    loop_var: aXRlbQo
+
+- name: Assert vars are defined correctly
+  ansible.builtin.assert:
+    that:
+      - bWV0aQo.name | default('') | length > 0
+      - bWV0aQo.path | default('') | length > 0
+      - bWV0aQo.target_hosts is iterable  | default([])
+  loop: >-
+    {{ managed_scripts_manifest 
+     | selectattr(
+        'target_hosts', 
+        'contains', 
+        inventory_hostname) 
+    }}
+  loop_control:
+    loop_var: bWV0aQo
+
+- name: Assert subelement cron_job correct if cron_enable set
+  ansible.builtin.assert:
+    that:
+      - ZGNzZGMK.cron_job | default([]) | type_debug == "list" 
+    fail_msg: "Fail cron_job must be a named list"
+  when: ZGNzZGMK.cron_enable | default(false) | bool
+  loop: >-
+    {{ managed_scripts_manifest 
+     | selectattr(
+         'target_hosts', 
+         'contains', 
+         inventory_hostname) 
+    }}
+  loop_control:
+    loop_var: ZGNzZGMK
+        
+- name: LOCAL TESTS
+  run_once: true
+  delegate_to: localhost
+  block: 
+
+    - name: Assert scripts exist locally
+      ansible.builtin.stat:
+        path: "{{ cxdlcgo.path }}"
+      register: register_stat_scripts
+      loop: "{{ managed_scripts_manifest }}"
+      loop_control:
+        loop_var: cxdlcgo
+ 
+    - name: Assert scripts exist on managed hosts
+      ansible.builtin.assert:
+        that:
+          - c2FhZAo.stat.exists | bool
+          - c2FhZAo.stat.executable | bool
+        fail_msg: "Assertions failed {{ c2FhZAo.cxdlcgo.path }} not found or missing exec  {{ inventory_hostname }}"
+        success_msg: "Assertions passed for {{ c2FhZAo.cxdlcgo.path }} found on {{ inventory_hostname }}"
+      loop: "{{ register_stat_scripts.results }}"
+      loop_control:
+        loop_var: c2FhZAo
+
+- name: Run only in check mode
+  become: true
+  become_user: "{{ bGttbAo.user }}"
+  when: ansible_check_mode
+  ansible.builtin.debug:
+    msg: >-
+      CHECK MODE [{{ inventory_hostname }}] 
+                  {{ bGttbAo.path }} 
+                  {{ bGttbAo.args 
+                   | default(omit) 
+                  }}
+  loop: >-
+    {{ managed_scripts_manifest  
+     | selectattr(
+         'target_hosts', 
+         'contains', 
+          inventory_hostname) 
+     | list 
+    }}
+  loop_control:
+    loop_var: bGttbAo

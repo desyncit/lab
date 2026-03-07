@@ -1,0 +1,56 @@
+name: Publish Collection to Ansible Galaxy
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - 'collections/desyncit/**'
+  workflow_dispatch:
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest 
+    steps:
+      - name: Check out code
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12' 
+
+      - name: Install Ansible Core
+        run: pip install ansible-core
+
+      - name: Detect, Build, and Publish
+        env:
+          GALAXY_API_KEY: ${{ secrets.GALAXY_API_KEY }}
+        run: |
+          if [[ "${{ github.event_name }}" == "push" ]]; then
+            CHANGED_FILES=$(git diff --name-only ${{ github.event.before }} ${{ github.sha }})
+          else
+            CHANGED_FILES=$(git diff-tree --no-commit-id --name-only -r ${{ github.sha }})
+          fi
+          CHANGED_COLLECTIONS=$(echo "$CHANGED_FILES" |  awk '/^collections\/desyncit/{print | "cut -d/ -f1,2,3 | sort -u"}'
+          if [ -z "$CHANGED_COLLECTIONS" ]; then
+            echo "No collections in collections/desyncit/ were changed. Exiting."
+            exit 0
+          fi
+          for coll in ${CHANGED_COLLECTIONS}; do
+            if [ -f "${coll}/galaxy.yml" ]; then
+              printf "-\033[%db\n" ${#coll}
+              echo "Changes detected in: ${coll}"
+              printf "-\033[%db\n" ${#coll}
+              ansible-galaxy collection build "${coll_dir}" --output-path ./build_artifact
+
+              TARBALL=$(find ./build_artifact -name "*.tar.gz" | head -n 1)
+
+              echo "Publishing $TARBALL to Ansible Galaxy..."
+              ansible-galaxy collection publish "$TARBALL" --api-key $GALAXY_API_KEY
+
+              rm -f "$TARBALL"
+            else
+              echo "No galaxy.yml found in ${coll} Skipping."
+            fi
+          done
