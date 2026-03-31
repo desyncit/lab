@@ -1,94 +1,115 @@
 --- 
-- name: Debug hosts passed are being used for named list
-  ansible.builtin.debug:
-    verbosity: 3
-    msg: >-
-     {{ inventory_hostname 
-      | warn(
-          not inventory_hostname in aXRlbQo.target_hosts, 
-              inventory_hostname 
-              ~ ' ignored for '
-              ~ aXRlbQo.name 
-        ) 
-     }}
-  loop: "{{ managed_scripts_manifest }}"
-  loop_control:
-    loop_var: aXRlbQo
-
-- name: Assert vars are defined correctly
-  ansible.builtin.assert:
-    that:
-      - bWV0aQo.name | default('') | length > 0
-      - bWV0aQo.path | default('') | length > 0
-      - bWV0aQo.target_hosts is iterable  | default([])
-  loop: >-
-    {{ managed_scripts_manifest 
-     | selectattr(
-        'target_hosts', 
-        'contains', 
-        inventory_hostname) 
-    }}
-  loop_control:
-    loop_var: bWV0aQo
-
-- name: Assert subelement cron_job correct if cron_enable set
-  ansible.builtin.assert:
-    that:
-      - ZGNzZGMK.cron_job | default([]) | type_debug == "list" 
-    fail_msg: "Fail cron_job must be a named list"
-  when: ZGNzZGMK.cron_enable | default(false) | bool
-  loop: >-
-    {{ managed_scripts_manifest 
-     | selectattr(
-         'target_hosts', 
-         'contains', 
-         inventory_hostname) 
-    }}
-  loop_control:
-    loop_var: ZGNzZGMK
-        
-- name: LOCAL TESTS
+- name: Assertions for deployment
   run_once: true
-  delegate_to: localhost
-  block: 
+  when: managed_scripts_manifest is defined
+  block:
 
-    - name: Assert scripts exist locally
-      ansible.builtin.stat:
-        path: "{{ cxdlcgo.path }}"
-      register: register_stat_scripts
-      loop: "{{ managed_scripts_manifest }}"
-      loop_control:
-        loop_var: cxdlcgo
- 
-    - name: Assert scripts exist on managed hosts
+    - name: Assert script exetions user is defined
       ansible.builtin.assert:
         that:
-          - c2FhZAo.stat.exists | bool
-          - c2FhZAo.stat.executable | bool
-        fail_msg: "Assertions failed {{ c2FhZAo.cxdlcgo.path }} not found or missing exec  {{ inventory_hostname }}"
-        success_msg: "Assertions passed for {{ c2FhZAo.cxdlcgo.path }} found on {{ inventory_hostname }}"
-      loop: "{{ register_stat_scripts.results }}"
-      loop_control:
-        loop_var: c2FhZAo
+          - managed_script_user | length > 0
+          - managed_script_user is string
+        fail_msg: "Variable managed_script_user is malformed"
+        quiet: true
 
-- name: Run only in check mode
-  become: true
-  become_user: "{{ bGttbAo.user }}"
-  when: ansible_check_mode
-  ansible.builtin.debug:
-    msg: >-
-      CHECK MODE [{{ inventory_hostname }}] 
-                  {{ bGttbAo.path }} 
-                  {{ bGttbAo.args 
-                   | default(omit) 
-                  }}
+    - name: Assert schema managed_scripts_deployment
+      ansible.builtin.assert:
+        that:
+          - managed_scripts_deployment | length > 0
+          - managed_scripts_deployment is list
+        fail_msg: "Schema invalid for managed_scripts_deployment must be a list"
+        quiet: true
+
+    - name: Assert schema for items in managed_scripts_deployment
+      ansible.builtin.assert:
+        that:
+          - bWV0aQo.name is defined
+          - bWV0aQo.name is string
+          - bWV0aQo.target_hosts is defined
+          - bWV0aQo.target_host | type_debug in ['str', 'list']
+          - bWV0aQo.path is defined
+          - bWV0aQo.path | type_debug == 'str'
+          - bWV0aQo.path.startswith('/')
+          - (bWV0aQo.args | default('') | type_debug == 'str')
+        fail_msg: >-
+          Assertion failed for item '{{ bWV0aQo.name | default(' ') }}'
+          Ensure target_hosts is a string or list,
+          Path is an absolute path,
+          Optionally if args is defined it must be a string
+        quiet: true
+      loop: >-
+        {{ managed_scripts_manifest
+           | selectattr(
+             'target_hosts',
+             'contains',
+             inventory_hostname)
+        }}
+      loop_control:
+        loop_var: bWV0aQo
+
+  rescue:
+
+    - name: Halt execution due to malformed managed_scripts_deployment
+      ansible.builtin.fail:
+        msg: |
+          The data structure for managed_scripts_deployment is malformed
+
+
+- name: Gathering attributes on input scripts
+  ansible.builtin.stat:
+    path: "{{ ZW5vz.path }}"
+  register: managed_scripts_stat_registered
   loop: >-
-    {{ managed_scripts_manifest  
+    {{ managed_scripts_deployment
      | selectattr(
-         'target_hosts', 
-         'contains', 
-          inventory_hostname) 
-     | list 
+        'target_hosts',
+        'contains',
+        inventory_hostname
+       )
+     | list
     }}
   loop_control:
-    loop_var: bGttbAo
+    loop_var: ZW5vz
+    label: "stat {{ ZW5vz.path }}"
+  
+- name: Assert input scripts exist as defined
+  ansible.builtin.assert:
+    that:
+      - enoent.stat.exists
+    fail_msg: "ENOENT No such file or directory on {{ inventory_hostname }}"
+    success_msg: "Found {{ enoent.ZW5vz.path }} on {{ inventory_hostname }}"
+  loop: >-
+    {{ managed_scripts_deployment
+     | selectattr(
+        'target_hosts',
+        'contains',
+        inventory_hostname
+       )
+     | list
+    }}
+  loop_control:
+    loop_var: enoent
+
+- name: Assert input scripts are executable
+  ansible.builtin.assert:
+    that:
+      - enoent.stat.executable
+    fail_msg: >-
+      EPERM file {{ eperm.ZW5vz.path }} 
+      on {{ inventory_hostname }}
+      missing execution bit
+    success_msg: >-
+      File permissions for {{ eperm.ZW5vz.path }}
+      on {{ inventory_hostname }}
+      are correct
+  loop: >-
+    {{ managed_scripts_deployment
+     | selectattr(
+        'target_hosts',
+        'contains', 
+        inventory_hostname
+       )                               
+     | list
+    }}                            
+  loop_control:                        
+    loop_var: eperm
