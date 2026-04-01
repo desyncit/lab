@@ -1,0 +1,13 @@
+---
+- name: Apply permission changes on remote host
+  ansible.builtin.file:
+    path: "{{ perm_item.path }}"
+    owner: "{{ perm_item.owner }}"
+    group: "{{ perm_item.group }}"
+    mode: "{{ perm_item.mode }}"
+    recurse: "{{ perm_item.recurse }}"
+  register: linux_common_manifest_permissions_registered
+  loop: "{{ bwfu.changes }}"
+  loop_control:
+    loop_var: perm_item
+    label: "{{ perm_item.path }}"

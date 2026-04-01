@@ -1,0 +1,52 @@
+---
+- name: Run scripts on managed nodes
+  hosts: tests
+  gather_facts: true
+
+  roles:
+    - common
+
+  vars:
+
+    linux_common_manifest:
+      - task: list
+        enabled: true
+        target_hosts:
+          - node01
+          - node02
+        paths:
+          - /var/log
+      - task: connections
+        enabled: true
+        display_all: true
+        target_hosts:
+          - node01
+          - node02
+        filter_ports:
+          - 22
+          - 80
+          - 443
+      - task: permissions
+        enabled: true
+        target_hosts:
+          - node01
+        changes:
+          - path: /var/www
+            type: directory
+            owner: httpd
+            group: httpd
+            mode: '0755'
+          - path: /var/www/index.html
+            type: file
+            owner: httpd
+            group: httpd
+            mode: '0755'
+      - task: stat
+        enabled: true
+        target_hosts:
+          - node01
+        paths:
+         - path: /var/www
+           type: directory
+         - path: /var/www/index.html
+           type: directory
