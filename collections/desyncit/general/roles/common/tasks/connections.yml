@@ -1,0 +1,44 @@
+---
+- name: Check listening ports on remote host
+  ansible.builtin.command:
+    cmd: ss {{ '-tlunp' if ansible_verbosity == 0 else '-tlunpa' }}
+  register: linux_common_manifest_connections_listening_registered
+  changed_when: false
+  no_log: true
+
+- name: Check all connections on remote host
+  when: bwfu.display_all | default(false)
+  ansible.builtin.command:
+    cmd: ss -tunpa
+  register: linux_common_manifest_connections_all_registered
+  changed_when: false
+  no_log: true
+
+- name: Display all listening ports
+  when: bwfu.filter_ports | default([]) | length == 0
+  ansible.builtin.debug:
+    msg:
+      - "Host: {{ inventory_hostname }}"
+      - "Report All sockets:"
+      - "{{ linux_common_manifest_connections_listening_registered.stdout_lines }}"
+ 
+- name: Display filtered listening ports
+  when: bwfu.filter_ports | default([]) | length > 0
+  ansible.builtin.debug:
+    msg:
+      - "Host: {{ inventory_hostname }}"
+      - "Port: {{ port_item }}"
+      - "Report filtered sockets listening:"
+      - "{{ linux_common_manifest_connections_listening_registered.stdout_lines | select('search', port_item | string) | list }}"
+  loop: "{{ bwfu.filter_ports | default([]) }}"
+  loop_control:
+    loop_var: port_item
+    label: "port {{ port_item }}"
+ 
+- name: Display all connections
+  when: bwfu.display_all | default(false)
+  ansible.builtin.debug:
+    msg:
+      - "Host: {{ inventory_hostname }}"
+      - "Report All Connections:"
+      - "{{ linux_common_manifest_connections_all_registered.stdout_lines }}" 

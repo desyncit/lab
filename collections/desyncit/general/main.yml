@@ -1,3 +1,0 @@
----
-- name: Run scripts on managed nodes
-  hosts: tests
