@@ -1,0 +1,921 @@
+[
+  {
+    "type": "console.flag",
+    "properties": {
+      "handler": {
+        "$codeRef": "features.setOCSFlags"
+      }
+    }
+  },
+  {
+    "type": "console.flag",
+    "properties": {
+      "handler": {
+        "$codeRef": "features.setODFFlag"
+      }
+    }
+  },
+  {
+    "type": "console.flag",
+    "properties": {
+      "handler": {
+        "$codeRef": "features.detectRGW"
+      }
+    }
+  },
+  {
+    "type": "console.flag",
+    "properties": {
+      "handler": {
+        "$codeRef": "features.detectComponents"
+      }
+    }
+  },
+  {
+    "type": "console.flag",
+    "properties": {
+      "handler": {
+        "$codeRef": "features.detectSSAR"
+      }
+    }
+  },
+  {
+    "type": "console.redux-reducer",
+    "properties": {
+      "scope": "odfConsoleRedux",
+      "reducer": { "$codeRef": "odfReduxReducers" }
+    }
+  },
+  {
+    "type": "console.flag/hookProvider",
+    "properties": {
+      "handler": {
+        "$codeRef": "odfReduxReducers.useODFNamespace"
+      }
+    }
+  },
+  {
+    "type": "console.flag/hookProvider",
+    "properties": {
+      "handler": {
+        "$codeRef": "odfReduxReducers.useODFSystemFlags"
+      }
+    }
+  },
+  {
+    "type": "console.navigation/separator",
+    "properties": {
+      "id": "odf-separator",
+      "section": "storage",
+      "insertBefore": "odfdashboard"
+    }
+  },
+  {
+    "type": "console.navigation/href",
+    "properties": {
+      "id": "odfdashboard",
+      "insertAfter": "volumesnapshotcontents",
+      "section": "storage",
+      "name": "%plugin__odf-console~Data Foundation%",
+      "href": "/odf/overview"
+    },
+    "flags": {
+      "required": ["ODF_MODEL", "ODF_ADMIN"]
+    }
+  },
+  {
+    "type": "console.navigation/href",
+    "properties": {
+      "id": "storage-cluster",
+      "insertAfter": "odfdashboard",
+      "section": "storage",
+      "name": "%plugin__odf-console~Storage cluster%",
+      "href": "/odf/storage-cluster"
+    },
+    "flags": {
+      "required": ["ODF_MODEL", "ODF_ADMIN"]
+    }
+  },
+  {
+    "type": "console.navigation/href",
+    "properties": {
+      "id": "external-systems",
+      "insertAfter": "storage-cluster",
+      "section": "storage",
+      "name": "%plugin__odf-console~External systems%",
+      "href": "/odf/external-systems"
+    },
+    "flags": {
+      "required": ["ODF_MODEL", "ODF_ADMIN"]
+    }
+  },
+  {
+    "type": "console.navigation/href",
+    "properties": {
+      "id": "storage-object",
+      "insertAfter": "external-systems",
+      "section": "storage",
+      "name": "%plugin__odf-console~Object storage%",
+      "href": "/odf/object-storage"
+    },
+    "flags": {
+      "required": ["ODF_MODEL"]
+    }
+  },
+  {
+    "type": "console.page/route",
+    "properties": {
+      "path": ["/odf/storage-cluster"],
+      "exact": false,
+      "component": { "$codeRef": "storageClusterDashboard.default" }
+    },
+    "flags": {
+      "required": ["ODF_MODEL", "ODF_ADMIN"]
+    }
+  },
+  {
+    "type": "console.page/route",
+    "properties": {
+      "path": ["/odf/object-storage"],
+      "exact": false,
+      "component": { "$codeRef": "objectStorageSection.default" }
+    },
+    "flags": {
+      "required": ["ODF_MODEL", "ODF_ADMIN"]
+    }
+  },
+  {
+    "type": "console.page/route",
+    "properties": {
+      "path": ["/odf/external-systems"],
+      "exact": true,
+      "component": { "$codeRef": "externalSystemsSection.default" }
+    },
+    "flags": {
+      "required": ["ODF_MODEL", "ODF_ADMIN"]
+    }
+  },
+  {
+    "type": "console.page/route",
+    "properties": {
+      "path": ["/odf/resource/:kind", "/odf/resource/ns/:namespace/:kind"],
+      "exact": true,
+      "component": { "$codeRef": "objectService.RerouteResource" }
+    },
+    "flags": {
+      "required": ["ODF_MODEL"]
+    }
+  },
+  {
+    "type": "console.page/route",
+    "properties": {
+      "exact": true,
+      "path": "/odf/resource/objectbucket.io~v1alpha1~ObjectBucketClaim/create/~new",
+      "component": {
+        "$codeRef": "createOBC.CreateOBCPage"
+      }
+    }
+  },
+  {
+    "type": "console.page/route",
+    "properties": {
+      "path": ["/odf/object-storage/create-bucket"],
+      "exact": true,
+      "component": { "$codeRef": "createBucket.default" }
+    }
+  },
+  {
+    "type": "console.page/route",
+    "properties": {
+      "exact": true,
+      "path": "/odf/system/ns/:namespace/ocs.openshift.io~v1~StorageCluster/:systemName/storage-pools/create/~new",
+      "component": {
+        "$codeRef": "createStoragePools.default"
+      }
+    }
+  },
+  {
+    "type": "console.page/route",
+    "properties": {
+      "path": "/odf/storage-cluster/storage-pools/:poolName",
+      "exact": false,
+      "component": {
+        "$codeRef": "blockPoolDetailsPage.default"
+      }
+    }
+  },
+  {
+    "type": "console.page/route",
+    "properties": {
+      "path": "/odf/resource/noobaa.io~v1alpha1~BackingStore/create/~new",
+      "exact": true,
+      "component": {
+        "$codeRef": "bsCreate.default"
+      }
+    }
+  },
+  {
+    "type": "console.page/route",
+    "properties": {
+      "path": "/odf/resource/noobaa.io~v1alpha1~NamespaceStore/create/~new",
+      "exact": true,
+      "component": {
+        "$codeRef": "nsCreate.default"
+      }
+    }
+  },
+  {
+    "type": "console.page/route",
+    "properties": {
+      "path": "/odf/resource/noobaa.io~v1alpha1~BucketClass/create/~new",
+      "exact": true,
+      "component": {
+        "$codeRef": "bcCreate.default"
+      }
+    }
+  },
+  {
+    "type": "console.page/route",
+    "properties": {
+      "path": "/odf/resource/noobaa.io~v1alpha1~BackingStore/:resourceName",
+      "exact": false,
+      "component": {
+        "$codeRef": "bsDetails.default"
+      }
+    }
+  },
+  {
+    "type": "console.page/route",
+    "properties": {
+      "path": "/odf/resource/noobaa.io~v1alpha1~BucketClass/:resourceName",
+      "exact": false,
+      "component": {
+        "$codeRef": "bcDetails.default"
+      }
+    }
+  },
+  {
+    "type": "console.page/route",
+    "properties": {
+      "path": "/odf/resource/noobaa.io~v1alpha1~NamespaceStore/:resourceName",
+      "exact": false,
+      "component": {
+        "$codeRef": "nsDetails.default"
+      }
+    }
+  },
+  {
+    "type": "console.page/route",
+    "properties": {
+      "path": [
+        "/odf/edit/:cluster/ns/:namespace/:kind/:name/yaml",
+        "/odf/edit/:cluster/cluster/:kind/:name/yaml"
+      ],
+      "exact": true,
+      "component": {
+        "$codeRef": "editPage.default"
+      }
+    }
+  },
+  {
+    "type": "console.dashboards/overview/health/prometheus",
+    "properties": {
+      "title": "Storage",
+      "queries": ["NooBaa_health_status"],
+      "additionalResource": { "$codeRef": "healthResource.healthResource" },
+      "healthHandler": { "$codeRef": "healthResource.healthHandler" },
+      "popupComponent": { "$codeRef": "healthResource.StoragePopover" },
+      "popupTitle": "Storage"
+    }
+  },
+  {
+    "type": "console.dashboards/overview/activity/resource",
+    "properties": {
+      "component": { "$codeRef": "activityResource.ClusterExpandActivity" },
+      "isActivity": { "$codeRef": "activityResource.isClusterExpandActivity" },
+      "k8sResource": {
+        "$codeRef": "activityResource.k8sResource"
+      }
+    }
+  },
+  {
+    "type": "console.storage-provider",
+    "properties": {
+      "name": "ObjectBucketClaim",
+      "Component": {
+        "$codeRef": "storageProvider"
+      }
+    }
+  },
+  {
+    "type": "console.dashboards/overview/inventory/item",
+    "properties": {
+      "mapper": { "$codeRef": "obcStatus.getObcStatusGroups" },
+      "model": { "$codeRef": "models.NooBaaObjectBucketClaimModel" }
+    }
+  },
+  {
+    "type": "console.storage-class/provisioner",
+    "properties": {
+      "CSI": {
+        "title": "Ceph RBD",
+        "provisioner": "rbd.csi.ceph.com",
+        "allowVolumeExpansion": true,
+        "parameters": {
+          "pool": {
+            "name": "Storage Pool",
+            "hintText": "Storage pool into which volume data shall be stored",
+            "required": true,
+            "visible": true,
+            "Component": {
+              "$codeRef": "storageProvisionerComponents.BlockPoolResourceComponent"
+            }
+          },
+          "imageFormat": {
+            "name": "Image Format",
+            "hintText": "RBD image format. Defaults to '2'",
+            "value": "2",
+            "visible": false
+          },
+          "imageFeatures": {
+            "name": "Image Features",
+            "hintText": "Ceph RBD image features",
+            "value": "layering,deep-flatten,exclusive-lock,object-map,fast-diff",
+            "visible": false
+          },
+          "csi.storage.k8s.io/provisioner-secret-name": {
+            "name": "Provisioner Secret Name",
+            "hintText": "The name of provisioner secret",
+            "value": "rook-csi-rbd-provisioner",
+            "visible": false
+          },
+          "csi.storage.k8s.io/node-stage-secret-name": {
+            "name": "Node Stage Secret Name",
+            "hintText": "The name of Node Stage secret",
+            "value": "rook-csi-rbd-node",
+            "visible": false
+          },
+          "csi.storage.k8s.io/fstype": {
+            "name": "Filesystem Type",
+            "hintText": "Ceph RBD filesystem type. Default set to ext4",
+            "value": "ext4",
+            "visible": false
+          },
+          "csi.storage.k8s.io/controller-expand-secret-name": {
+            "name": "Expand Secret Name",
+            "hintText": "The namespace where provisioner secret is created",
+            "value": "rook-csi-rbd-provisioner",
+            "visible": false
+          },
+          "encrypted": {
+            "name": "Enable Encryption",
+            "hintText": "The namespace where provisioner secret is created",
+            "Component": {
+              "$codeRef": "storageProvisionerComponents.StorageClassEncryption"
+            },
+            "visible": true
+          },
+          "encryptionKMSID": {
+            "name": "Encryption ID",
+            "hintText": "A unique ID matching KMS ConfigMap",
+            "Component": {
+              "$codeRef": "storageProvisionerComponents.StorageClassEncryptionKMSID"
+            },
+            "visible": {
+              "$codeRef": "storageProvisioners.isEncryptionKMSIdVisibleOrRequired"
+            },
+            "required": {
+              "$codeRef": "storageProvisioners.isEncryptionKMSIdVisibleOrRequired"
+            }
+          },
+          "thickProvision": {
+            "name": "Enable Thick Provisioning",
+            "hintText": "Volumes will allocate the requested capacity upon volume creation",
+            "Component": { "$codeRef": "thickProvisioner.ThickProvision" },
+            "visible": true
+          }
+        },
+        "mutator": {
+          "$codeRef": "mutators.addRBDAnnotations"
+        }
+      }
+    }
+  },
+  {
+    "type": "console.storage-class/provisioner",
+    "properties": {
+      "CSI": {
+        "title": "Ceph FS",
+        "provisioner": "cephfs.csi.ceph.com",
+        "allowVolumeExpansion": true,
+        "parameters": {
+          "fsName": {
+            "name": "Filesystem Name",
+            "hintText": "CephFS filesystem name into which the volume shall be created",
+            "required": true,
+            "visible": true,
+            "Component": {
+              "$codeRef": "storageProvisionerComponents.CephFsNameComponent"
+            }
+          },
+          "pool": {
+            "name": "Storage Pool",
+            "hintText": "Storage pool into which volume data shall be stored",
+            "required": true,
+            "visible": true,
+            "Component": {
+              "$codeRef": "storageProvisionerComponents.CephFsPoolComponent"
+            }
+          },
+          "csi.storage.k8s.io/provisioner-secret-name": {
+            "name": "Provisioner Secret Name",
+            "hintText": "The name of provisioner secret",
+            "value": "rook-csi-cephfs-provisioner",
+            "visible": false
+          },
+          "csi.storage.k8s.io/node-stage-secret-name": {
+            "name": "Node Stage Secret Name",
+            "hintText": "The name of Node Stage secret",
+            "value": "rook-csi-cephfs-node",
+            "visible": false
+          },
+          "csi.storage.k8s.io/controller-expand-secret-name": {
+            "name": "Expand Secret Name",
+            "hintText": "The namespace where provisioner secret is created",
+            "value": "rook-csi-cephfs-provisioner",
+            "visible": false
+          }
+        },
+        "mutator": {
+          "$codeRef": "mutators.addClusterParams"
+        }
+      }
+    }
+  },
+  {
+    "type": "console.alert-action",
+    "properties": {
+      "alert": "CephOSDDiskUnavailable",
+      "text": "Troubleshoot",
+      "action": {
+        "$codeRef": "alert.getDiskAlertActionPath"
+      }
+    }
+  },
+  {
+    "type": "console.alert-action",
+    "properties": {
+      "alert": "CephOSDDiskNotResponding",
+      "text": "Troubleshoot",
+      "action": {
+        "$codeRef": "alert.getDiskAlertActionPath"
+      }
+    }
+  },
+  {
+    "type": "console.alert-action",
+    "properties": {
+      "alert": "CephClusterNearFull",
+      "text": "Add Capacity",
+      "action": {
+        "$codeRef": "alert.launchClusterExpansionModal"
+      }
+    }
+  },
+  {
+    "type": "console.alert-action",
+    "properties": {
+      "alert": "CephClusterCriticallyFull",
+      "text": "Add Capacity",
+      "action": {
+        "$codeRef": "alert.launchClusterExpansionModal"
+      }
+    }
+  },
+  {
+    "type": "console.action/provider",
+    "properties": {
+      "contextId": "csv-actions",
+      "provider": { "$codeRef": "actions.useCsvActions" }
+    }
+  },
+  {
+    "type": "odf.horizontalNav/tab",
+    "properties": {
+      "id": "topology",
+      "name": "%plugin__odf-console~Topology%",
+      "contextId": "odf-dashboard",
+      "before": "systems",
+      "href": "topology",
+      "component": {
+        "$codeRef": "topology.default"
+      }
+    }
+  },
+  {
+    "type": "console.page/route",
+    "properties": {
+      "path": ["/odf/object-storage"],
+      "exact": false,
+      "component": { "$codeRef": "objectService.default" }
+    },
+    "flags": {
+      "required": ["ODF_MODEL"],
+      "disallowed": ["ODF_ADMIN"]
+    }
+  },
+  {
+    "type": "odf.horizontalNav/tab",
+    "properties": {
+      "id": "buckets",
+      "name": "%plugin__odf-console~Buckets%",
+      "contextId": "odf-object-service",
+      "href": "buckets",
+      "component": {
+        "$codeRef": "s3BucketList.default"
+      }
+    }
+  },
+  {
+    "type": "odf.horizontalNav/tab",
+    "properties": {
+      "id": "backing-store",
+      "name": "%plugin__odf-console~Backing Store%",
+      "after": "buckets",
+      "contextId": "odf-object-service",
+      "href": "noobaa.io~v1alpha1~BackingStore",
+      "component": {
+        "$codeRef": "resourcePages.BackingStoreListPage"
+      }
+    },
+    "flags": {
+      "required": ["MCG", "ODF_ADMIN"]
+    }
+  },
+  {
+    "type": "odf.horizontalNav/tab",
+    "properties": {
+      "id": "bucket-class",
+      "name": "%plugin__odf-console~Bucket Class%",
+      "contextId": "odf-object-service",
+      "after": "backing-store",
+      "href": "noobaa.io~v1alpha1~BucketClass",
+      "component": {
+        "$codeRef": "resourcePages.BucketClassListPage"
+      }
+    },
+    "flags": {
+      "required": ["MCG", "ODF_ADMIN"]
+    }
+  },
+  {
+    "type": "odf.horizontalNav/tab",
+    "properties": {
+      "id": "namespace-store",
+      "name": "%plugin__odf-console~Namespace Store%",
+      "contextId": "odf-object-service",
+      "after": "bucket-class",
+      "href": "noobaa.io~v1alpha1~NamespaceStore",
+      "component": {
+        "$codeRef": "resourcePages.NamespaceStoreListPage"
+      }
+    },
+    "flags": {
+      "required": ["MCG", "ODF_ADMIN"]
+    }
+  },
+  {
+    "type": "odf.horizontalNav/tab",
+    "properties": {
+      "id": "objectbuckets",
+      "name": "%plugin__odf-console~Object Buckets%",
+      "contextId": "odf-object-service",
+      "after": "namespace-store",
+      "href": "objectbucket.io~v1alpha1~ObjectBucket",
+      "component": {
+        "$codeRef": "ob.ObjectBucketListPage"
+      }
+    },
+    "flags": {
+      "required": ["RGW"],
+      "disallowed": ["MCG"]
+    }
+  },
+  {
+    "type": "console.page/route",
+    "properties": {
+      "path": "/odf/resource/objectbucket.io~v1alpha1~ObjectBucket/:resourceName",
+      "exact": false,
+      "component": {
+        "$codeRef": "ob.OBDetailsPage"
+      }
+    }
+  },
+  {
+    "type": "odf.horizontalNav/tab",
+    "properties": {
+      "id": "objectbucketclaims",
+      "name": "%plugin__odf-console~Object Bucket Claims%",
+      "contextId": "odf-object-service",
+      "after": "objectbuckets",
+      "href": "objectbucket.io~v1alpha1~ObjectBucketClaim",
+      "component": {
+        "$codeRef": "obc.OBCListPage"
+      }
+    },
+    "flags": {
+      "required": ["MCG"]
+    }
+  },
+  {
+    "type": "odf.horizontalNav/tab",
+    "properties": {
+      "id": "objectbucketclaims",
+      "name": "%plugin__odf-console~Object Bucket Claims%",
+      "contextId": "odf-object-service",
+      "after": "objectbuckets",
+      "href": "objectbucket.io~v1alpha1~ObjectBucketClaim",
+      "component": {
+        "$codeRef": "obc.OBCListPage"
+      }
+    },
+    "flags": {
+      "required": ["RGW"],
+      "disallowed": ["MCG"]
+    }
+  },
+  {
+    "type": "console.page/route",
+    "properties": {
+      "path": "/odf/resource/ns/:namespace/objectbucket.io~v1alpha1~ObjectBucketClaim/:resourceName",
+      "exact": false,
+      "component": {
+        "$codeRef": "obc.OBCDetailsPage"
+      }
+    }
+  },
+  {
+    "type": "console.alert-action",
+    "properties": {
+      "alert": "CephMonLowNumber",
+      "text": "Configure",
+      "action": {
+        "$codeRef": "monCountAlertModal.launchLowMonAlertModal"
+      }
+    }
+  },
+  {
+    "type": "console.navigation/href",
+    "properties": {
+      "id": "storage-consumers",
+      "name": "%plugin__odf-console~Storage consumers%",
+      "insertAfter": "storage-object",
+      "section": "storage",
+      "href": "/odf/storage-consumers"
+    },
+    "flags": {
+      "required": ["PROVIDER_MODE", "ODF_ADMIN"]
+    }
+  },
+  {
+    "type": "console.page/route",
+    "properties": {
+      "path": "/odf/storage-consumers",
+      "exact": true,
+      "component": {
+        "$codeRef": "storageConsumerListPage.ClientListPage"
+      },
+      "flags": {
+        "required": ["PROVIDER_MODE", "ODF_ADMIN"]
+      }
+    }
+  },
+  {
+    "type": "console.page/route",
+    "properties": {
+      "exact": true,
+      "path": "/odf/resource/odf.openshift.io~v1alpha1~StorageSystem/create/~new",
+      "component": { "$codeRef": "wizard.default" }
+    }
+  },
+  {
+    "type": "console.page/route",
+    "properties": {
+      "path": "/odf/object-storage/buckets/:bucketName",
+      "exact": false,
+      "component": {
+        "$codeRef": "s3BucketOverview.default"
+      }
+    }
+  },
+  {
+    "type": "console.page/route",
+    "properties": {
+      "path": "/odf/object-storage/buckets/:bucketName/management/lifecycle/create/~new",
+      "exact": false,
+      "component": {
+        "$codeRef": "s3BucketLifecycleRule.CreateLifecycleRule"
+      }
+    }
+  },
+  {
+    "type": "console.page/route",
+    "properties": {
+      "path": "/odf/object-storage/buckets/:bucketName/management/lifecycle/edit",
+      "exact": false,
+      "component": {
+        "$codeRef": "s3BucketLifecycleRule.EditLifecycleRule"
+      }
+    }
+  },
+  {
+    "type": "console.page/route",
+    "properties": {
+      "path": "/odf/object-storage/buckets/:bucketName/permissions/cors/create/~new",
+      "exact": false,
+      "component": {
+        "$codeRef": "s3BucketCors.CreateCorsRule"
+      }
+    }
+  },
+  {
+    "type": "console.page/route",
+    "properties": {
+      "path": "/odf/object-storage/buckets/:bucketName/permissions/cors/edit",
+      "exact": false,
+      "component": {
+        "$codeRef": "s3BucketCors.EditCorsRule"
+      }
+    }
+  },
+  {
+    "type": "console.page/route",
+    "properties": {
+      "path": "/odf/object-storage/buckets/:bucketName/permissions/cors/details",
+      "exact": false,
+      "component": {
+        "$codeRef": "s3BucketCorsDetails.CorsDetailsPage"
+      }
+    }
+  },
+  {
+    "type": "console.page/route",
+    "properties": {
+      "path": "/odf/system/ns/:namespace/ocs.openshift.io~v1~storagecluster/:resourceName/~attachstorage",
+      "exact": false,
+      "component": { "$codeRef": "attachStorage.default" }
+    }
+  },
+  {
+    "type": "console.action/resource-provider",
+    "properties": {
+      "model": {
+        "version": "v1",
+        "kind": "StorageClass",
+        "group": "storage.k8s.io"
+      },
+      "provider": {
+        "$codeRef": "storageClientAttacherAction.useStorageClientAttacherAction"
+      }
+    },
+    "flags": {
+      "required": ["PROVIDER_MODE"]
+    }
+  },
+  {
+    "type": "console.action/resource-provider",
+    "properties": {
+      "model": {
+        "version": "v1",
+        "kind": "VolumeSnapshotClass",
+        "group": "snapshot.storage.k8s.io"
+      },
+      "provider": {
+        "$codeRef": "storageClientAttacherAction.useStorageClientAttacherAction"
+      }
+    },
+    "flags": {
+      "required": ["PROVIDER_MODE"]
+    }
+  },
+  {
+    "type": "console.page/route",
+    "properties": {
+      "path": "/odf/storage-consumers/create",
+      "exact": true,
+      "component": { "$codeRef": "storageConsumerCreate.default" }
+    }
+  },
+  {
+    "type": "console.page/route",
+    "properties": {
+      "exact": true,
+      "path": [
+        "/k8s/ns/:ns/operators.coreos.com~v1alpha1~ClusterServiceVersion/:appName/local.storage.openshift.io~v1alpha1~LocalVolumeDiscovery/~new",
+        "k8s/ns/:ns/clusterserviceversions/:appName/local.storage.openshift.io~v1alpha1~LocalVolumeDiscovery/~new"
+      ],
+      "component": {
+        "$codeRef": "createLVD.CreateLocalVolumeDiscovery"
+      }
+    }
+  },
+  {
+    "type": "console.page/route",
+    "properties": {
+      "exact": true,
+      "path": [
+        "k8s/ns/:ns/operators.coreos.com~v1alpha1~ClusterServiceVersion/:appName/local.storage.openshift.io~v1alpha1~LocalVolumeSet/~new",
+        "k8s/ns/:ns/clusterserviceversions/:appName/local.storage.openshift.io~v1alpha1~LocalVolumeSet/~new"
+      ],
+      "component": {
+        "$codeRef": "createLVS.default"
+      }
+    }
+  },
+  {
+    "type": "console.tab/horizontalNav",
+    "properties": {
+      "model": {
+        "group": "",
+        "version": "v1",
+        "kind": "Node"
+      },
+      "page": {
+        "name": "Disks",
+        "href": "disks"
+      },
+      "component": {
+        "$codeRef": "diskListPage.default"
+      }
+    }
+  },
+  {
+    "type": "console.page/route",
+    "properties": {
+      "path": "/odf/overview",
+      "exact": false,
+      "component": { "$codeRef": "overview.default" }
+    }
+  },
+  {
+    "type": "console.page/route",
+    "properties": {
+      "path": ["/odf/external-systems/ceph/~create"],
+      "exact": true,
+      "component": { "$codeRef": "rhcsCreate.default" }
+    },
+    "flags": {
+      "required": ["ODF_MODEL", "ODF_ADMIN"]
+    }
+  },
+  {
+    "type": "console.page/route",
+    "properties": {
+      "path": ["/odf/external-systems/flash/~create"],
+      "exact": true,
+      "component": { "$codeRef": "flashCreate.default" }
+    },
+    "flags": {
+      "required": ["ODF_MODEL", "ODF_ADMIN"]
+    }
+  },
+  {
+    "type": "console.page/route",
+    "properties": {
+      "path": ["/odf/external-systems/scale/~create"],
+      "exact": true,
+      "component": { "$codeRef": "scaleCreate.default" }
+    },
+    "flags": {
+      "required": ["ODF_MODEL", "ODF_ADMIN", "FDF_FLAG", "SCALE_GATE"]
+    }
+  },
+  {
+    "type": "console.page/route",
+    "properties": {
+      "path": [
+        "/odf/external-systems/scale.spectrum.ibm.com~v1beta1~remotecluster/:systemName"
+      ],
+      "exact": false,
+      "component": { "$codeRef": "scaleDashboard.default" }
+    },
+    "flags": {
+      "required": ["FDF_FLAG", "SCALE_GATE"]
+    }
+  },
+  {
+    "type": "console.page/route",
+    "properties": {
+      "path": [
+        "/odf/external-systems/ocs.openshift.io~v1~storagecluster/:systemName"
+      ],
+      "exact": false,
+      "component": {
+        "$codeRef": "rhcsDashboard.ExternalStorageClusterDashboard"
+      }
+    },
+    "flags": {
+      "required": ["ODF_MODEL", "ODF_ADMIN"]
+    }
+  }
+]

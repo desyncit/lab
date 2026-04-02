@@ -1,0 +1,26 @@
+.odf-block-pool__mirroring-card-item-dt {
+  flex-basis: 100%;
+}
+
+.odf-block-pool__mirroring-card-item-dd {
+  flex-basis: 100%;
+  margin-bottom: 8px;
+  overflow: hidden;
+  overflow-wrap: break-word;
+}
+
+.odf-block-pool-mirroring-help {
+  &:hover .ceph-block-pool-mirroring-help__icon {
+    color: var(--pf-v5-global--Color--dark-100);
+  }
+
+  .odf-block-pool-mirroring-help__icon {
+    color: var(--pf-v5-global--Color--dark-200);
+    font-size: 12px;
+    margin-right: var(--pf-v5-global--spacer--sm);
+  }
+}
+
+.odf-block-pool-utilization-card-body {
+  padding: 0;
+}

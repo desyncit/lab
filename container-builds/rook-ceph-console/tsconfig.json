@@ -1,0 +1,30 @@
+{
+  "compilerOptions": {
+    "baseUrl": ".",
+    "allowSyntheticDefaultImports": true,
+    "esModuleInterop": true,
+    "module": "esnext",
+    "moduleResolution": "node",
+    "target": "es2020",
+    "sourceMap": true,
+    "jsx": "react",
+    "allowJs": true,
+    "strict": false,
+    "noUnusedLocals": true,
+    "paths": {
+       "@rook/shared": ["./packages/shared/src"],
+       "@rook/shared/all": ["./packages/shared/src/*"],
+       "@rook/core/all": ["./packages/rook/*"],
+       "@rook/all": ["./packages/*"]
+  },
+  "include": [
+     "packages"
+   ],
+  "exclude": [
+    "**/*/build",
+    "**/*/node_modules",
+    "**/*.spec.ts",
+    "**/*.spec.tsx"
+    ]
+   }
+}

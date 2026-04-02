@@ -1,0 +1,14 @@
+{
+  "name": "@odf/client",
+  "version": "0.0.0",
+  "description": "UI plugin for ODF client mode cluster",
+  "scripts": {
+    "build": "NODE_ENV=production PLUGIN=client I8N_NS=plugin__odf-client-console yarn --cwd ../.. build:plugin",
+    "dev": "PLUGIN=client I8N_NS=plugin__odf-client-console yarn --cwd ../.. server:plugin"
+  },
+  "dependencies": {
+    "@odf/core": "0.0.0",
+    "@odf/ocs": "0.0.0",
+    "@odf/shared": "file:../shared"
+  }
+}

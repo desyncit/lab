@@ -1,0 +1,7 @@
+.dropdown--full-width {
+    &,
+    .pf-v5-c-dropdown__toggle {
+      justify-content: space-between;
+      width: 100%;
+    }
+}

@@ -1,0 +1,13 @@
+.odf-icon-space-r {
+  margin-right: 0.25em;
+}
+
+.odf-icon-and-text {
+  align-items: baseline;
+  display: flex;
+
+  // fix bug where concurrent .pf-v5-c-label are misaligned vertically
+  .pf-v5-c-label__icon & {
+    display: block;
+  }
+}
