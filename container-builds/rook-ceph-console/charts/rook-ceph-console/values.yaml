@@ -1,0 +1,57 @@
+---
+plugin:
+  name: "rook-ceph-obc-plugin"
+  description: "anti-nooba"
+  image: "quay.io/tampadevs/rook-ceph-obc-plugin:latest"
+  imagePullPolicy: IfNotPresent
+  imagePullSecrets: 
+    - name: tampadevs-patch-pull-secret
+  replicas: 1
+  port: 9001
+  securityContext:
+    enabled: true
+  podSecurityContext:
+    enabled: true
+    runAsNonRoot: true
+    seccompProfile:
+      type: RuntimeDefault
+  containerSecurityContext:
+    enabled: true
+    allowPrivilegeEscalation: false
+    capabilities:
+      drop:
+        - ALL
+  resources:
+    requests:
+      cpu: 10m
+      memory: 50Mi
+  basePath: /
+  certificateSecretName: "certificate-rook-ceph-obc-plugin"
+  serviceAccount:
+    create: true
+    annotations: {}
+    name: "rook-ceph-obc-sa"
+  patcherServiceAccount:
+    create: true
+    annotations: {}
+    name: "rook-ceph-obc-patch-sa"
+  jobs:
+    patchConsoles:
+      enabled: false
+      # need to replace this image:
+      image: "registry.redhat.io/openshift4/ose-tools-rhel9@sha256:ee65b244fc94d5765514c604dc0a288517dcdce68de65128d047622b6b30a618"
+      podSecurityContext:
+        enabled: true
+        runAsNonRoot: true
+        seccompProfile:
+          type: RuntimeDefault
+      containerSecurityContext:
+        enabled: true
+        allowPrivilegeEscalation: false
+        capabilities:
+          drop:
+            - ALL
+      resources:
+        requests:
+          cpu: 10m
+          memory: 50Mi

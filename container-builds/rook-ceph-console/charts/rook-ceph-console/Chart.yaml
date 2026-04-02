@@ -1,0 +1,6 @@
+---
+apiVersion: v2
+name: rook-ceph-obc-plugin
+description: Rook Ceph OBC Plugin
+type: application
+version: 1.0.0

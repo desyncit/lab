@@ -1,0 +1,72 @@
+[
+  {
+    "type": "console.navigation/href",
+    "properties": {
+      "id": "odfdashboard",
+      "insertBefore": "persistentvolumes",
+      "section": "storage",
+      "name": "Data Foundation",
+      "href": "/odf/cluster"
+    },
+    "flags": {
+      "disallowed": ["ODF_MODEL"]
+    }
+  },
+  {
+    "type": "console.page/route",
+    "properties": {
+      "path": ["/odf/cluster"],
+      "exact": false,
+      "component": { "$codeRef": "dashboard.default" }
+    },
+    "flags": {
+      "disallowed": ["ODF_MODEL"]
+    }
+  },
+  {
+    "type": "console.resource/create",
+    "properties": {
+      "model": {
+        "group": "ocs.openshift.io",
+        "version": "v1alpha1",
+        "kind": "StorageClient"
+      },
+      "component": { "$codeRef": "install.default" }
+    },
+    "flags": {
+      "disallowed": ["ODF_MODEL"]
+    }
+  },
+  {
+    "type": "console.flag",
+    "properties": {
+      "handler": {
+        "$codeRef": "features.detectRGW"
+      }
+    },
+    "flags": {
+      "disallowed": ["ODF_MODEL"]
+    }
+  },
+  {
+    "type": "console.redux-reducer",
+    "properties": {
+      "scope": "odfConsoleRedux",
+      "reducer": { "$codeRef": "features" }
+    },
+    "flags": {
+      "disallowed": ["ODF_MODEL"]
+    }
+  },
+  {
+    "type": "console.flag/hookProvider",
+    "properties": {
+      "handler": {
+        "$codeRef": "features.useODFNamespace"
+      }
+    },
+    "flags": {
+      "disallowed": ["ODF_MODEL"]
+    }
+  }
+]
