@@ -11,8 +11,6 @@ import (
 	"strings"
 )
 
-// ── Config ────────────────────────────────────────────────────────────────────
-
 type Config struct {
 	Port            string
 	AnthropicKey    string
@@ -37,8 +35,6 @@ func loadConfig() Config {
 	}
 }
 
-// ── Request / Response types ──────────────────────────────────────────────────
-
 type GenerateRequest struct {
 	Prompt   string `json:"prompt"`
 	Provider string `json:"provider"`
@@ -51,10 +47,6 @@ type GenerateResponse struct {
 	Text     string `json:"text,omitempty"`
 	Error    string `json:"error,omitempty"`
 }
-
-// ── Gemini native image generation (generateContent) ─────────────────────────
-// Models: gemini-2.5-flash-image, gemini-3.1-flash-image-preview, gemini-3-pro-image-preview
-// These use generateContent with responseModalities: ["IMAGE"]
 
 type geminiContent struct {
 	Parts []geminiPart `json:"parts"`
@@ -135,7 +127,6 @@ func generateGemini(apiKey, model, prompt string) GenerateResponse {
 		return GenerateResponse{Error: gResp.Error.Message}
 	}
 
-	// Extract image from response parts
 	for _, candidate := range gResp.Candidates {
 		for _, part := range candidate.Content.Parts {
 			if part.InlineData != nil && part.InlineData.Data != "" {
@@ -149,8 +140,6 @@ func generateGemini(apiKey, model, prompt string) GenerateResponse {
 
 	return GenerateResponse{Error: "no image returned from Gemini"}
 }
-
-// ── Anthropic ─────────────────────────────────────────────────────────────────
 
 type anthropicRequest struct {
 	Model     string             `json:"model"`
@@ -219,8 +208,6 @@ Be specific and creative. 2-3 sentences max.`, prompt)
 	}
 	return GenerateResponse{Text: text.String()}
 }
-
-// ── Handlers ──────────────────────────────────────────────────────────────────
 
 func writeJSON(w http.ResponseWriter, status int, v any) {
 	w.Header().Set("Content-Type", "application/json")
@@ -298,9 +285,9 @@ func makeConfigHandler(cfg Config) http.HandlerFunc {
 				Label:     "Google Gemini",
 				Available: cfg.GeminiKey != "",
 				Models: []modelInfo{
-					{"gemini-2.5-flash-image", "Gemini 2.5 Flash Image (free tier ✓)"},
-					{"gemini-3.1-flash-image-preview", "Gemini 3.1 Flash Image (billing required)"},
-					{"gemini-3-pro-image-preview", "Gemini 3 Pro Image (billing required)"},
+					{"gemini-2.5-flash-image", "Gemini 2.5 Flash Image"},
+					{"gemini-3.1-flash-image-preview", "Gemini 3.1 Flash Image"},
+					{"gemini-3-pro-image-preview", "Gemini 3 Pro Image"},
 				},
 			},
 			{
@@ -321,9 +308,6 @@ func makeConfigHandler(cfg Config) http.HandlerFunc {
 		})
 	}
 }
-
-// ── Main ──────────────────────────────────────────────────────────────────────
-
 func main() {
 	cfg := loadConfig()
 
