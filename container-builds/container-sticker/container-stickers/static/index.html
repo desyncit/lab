@@ -1,0 +1,694 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Sticker Creator</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    /* ── Theme variables ───────────────────────────────────────────────────── */
+    :root, [data-theme="light"] {
+      --bg:           #F7F6F3;
+      --surface:      #ffffff;
+      --surface-2:    #F5F5F3;
+      --border:       #E0DED8;
+      --border-focus: #7F77DD;
+      --text-1:       #1a1a18;
+      --text-2:       #5a5955;
+      --text-3:       #999894;
+
+      --purple-bg:    #EEEDFE;
+      --purple:       #7F77DD;
+      --purple-dark:  #3C3489;
+      --teal-bg:      #E1F5EE;
+      --teal:         #1D9E75;
+      --coral-bg:     #FAECE7;
+      --coral:        #D85A30;
+      --amber-bg:     #FFF3E0;
+      --amber:        #F59E0B;
+      --red:          #C00;
+
+      --toggle-icon:  "🌙";
+      --checker-a:    #d8d8d8;
+      --checker-b:    transparent;
+    }
+
+    [data-theme="dark"] {
+      --bg:           #111110;
+      --surface:      #1c1c1a;
+      --surface-2:    #252523;
+      --border:       #333330;
+      --border-focus: #9D96E8;
+      --text-1:       #EEECEA;
+      --text-2:       #9A9894;
+      --text-3:       #666460;
+
+      --purple-bg:    #26215C;
+      --purple:       #9D96E8;
+      --purple-dark:  #7F77DD;
+      --teal-bg:      #04342C;
+      --teal:         #3DCBA0;
+      --coral-bg:     #4A1B0C;
+      --coral:        #F07A50;
+      --amber-bg:     #412402;
+      --amber:        #F5B942;
+      --red:          #FF6B6B;
+
+      --toggle-icon:  "☀️";
+      --checker-a:    #2a2a28;
+      --checker-b:    transparent;
+    }
+
+    /* ── Base ──────────────────────────────────────────────────────────────── */
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      background: var(--bg);
+      color: var(--text-1);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      transition: background 0.2s, color 0.2s;
+    }
+
+    /* ── Header ────────────────────────────────────────────────────────────── */
+    header {
+      background: var(--surface);
+      border-bottom: 1px solid var(--border);
+      padding: 13px 24px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      transition: background 0.2s, border-color 0.2s;
+    }
+    header .logo { font-size: 20px; }
+    header h1 { font-size: 17px; font-weight: 600; color: var(--text-1); }
+
+    .header-right { margin-left: auto; display: flex; align-items: center; gap: 14px; }
+
+    .provider-badge { display: flex; align-items: center; gap: 6px; font-size: 12px; color: var(--text-2); }
+    .provider-dot { width: 7px; height: 7px; border-radius: 50%; background: var(--border); }
+    .provider-dot.ok { background: var(--teal); }
+
+    /* Dark mode toggle */
+    .theme-toggle {
+      width: 32px; height: 32px;
+      border-radius: 8px;
+      border: 1px solid var(--border);
+      background: var(--surface-2);
+      cursor: pointer;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 15px;
+      transition: background 0.15s, border-color 0.15s;
+      flex-shrink: 0;
+    }
+    .theme-toggle:hover { border-color: var(--purple); background: var(--purple-bg); }
+
+    /* ── Layout ────────────────────────────────────────────────────────────── */
+    .layout {
+      display: grid;
+      grid-template-columns: 330px 1fr;
+      flex: 1;
+      max-width: 1120px;
+      margin: 24px auto;
+      width: 100%;
+      padding: 0 24px;
+      align-items: start;
+      gap: 20px;
+    }
+
+    /* ── Sidebar ───────────────────────────────────────────────────────────── */
+    .sidebar {
+      background: var(--surface);
+      border-radius: 16px;
+      border: 1px solid var(--border);
+      padding: 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+      position: sticky;
+      top: 24px;
+      transition: background 0.2s, border-color 0.2s;
+    }
+    .sidebar h2 { font-size: 14px; font-weight: 600; color: var(--text-1); }
+    .section-divider { border: none; border-top: 1px solid var(--border); margin: 2px 0; }
+
+    /* ── Form fields ───────────────────────────────────────────────────────── */
+    .field { display: flex; flex-direction: column; gap: 5px; }
+    .field label { font-size: 12px; color: var(--text-2); font-weight: 500; }
+
+    textarea, input[type="text"], select {
+      width: 100%;
+      padding: 9px 12px;
+      font-size: 14px;
+      background: var(--surface-2);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      color: var(--text-1);
+      font-family: inherit;
+      outline: none;
+      transition: border-color 0.15s, background 0.2s, color 0.2s;
+    }
+    textarea { min-height: 84px; resize: vertical; line-height: 1.5; }
+    textarea:focus, input:focus, select:focus {
+      border-color: var(--border-focus);
+      background: var(--surface);
+    }
+    select {
+      appearance: none;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%23888' d='M6 8L1 3h10z'/%3E%3C/svg%3E");
+      background-repeat: no-repeat;
+      background-position: right 10px center;
+      padding-right: 28px;
+      cursor: pointer;
+    }
+    select:disabled { opacity: 0.5; cursor: not-allowed; }
+
+    /* ── Provider cards ────────────────────────────────────────────────────── */
+    .provider-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+    .provider-card {
+      padding: 10px 12px;
+      background: var(--surface-2);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      cursor: pointer;
+      transition: all 0.15s;
+    }
+    .provider-card:hover:not(.unavailable) { border-color: var(--text-3); }
+    .provider-card.active { border-color: var(--purple); background: var(--purple-bg); }
+    .provider-card.unavailable { opacity: 0.45; cursor: not-allowed; }
+    .provider-card .pc-name { font-size: 13px; font-weight: 600; color: var(--text-1); }
+    .provider-card.active .pc-name { color: var(--purple); }
+    .provider-card .pc-sub { font-size: 11px; color: var(--text-2); margin-top: 2px; }
+    .provider-card .pc-status { font-size: 10px; margin-top: 4px; }
+    .provider-card .pc-status.configured { color: var(--teal); }
+    .provider-card .pc-status.missing { color: var(--red); }
+
+    /* ── Option buttons ────────────────────────────────────────────────────── */
+    .btn-grid-4 { display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; }
+    .btn-grid-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; }
+    .btn-grid-2 { display: grid; grid-template-columns: repeat(2, 1fr); gap: 6px; }
+
+    .opt-btn {
+      padding: 8px 4px;
+      font-size: 12px;
+      font-family: inherit;
+      background: var(--surface-2);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      cursor: pointer;
+      color: var(--text-2);
+      text-align: center;
+      transition: all 0.15s;
+    }
+    .opt-btn:hover { border-color: var(--text-3); color: var(--text-1); }
+    .opt-btn.active-purple { border-color: var(--purple); color: var(--purple); background: var(--purple-bg); font-weight: 600; }
+    .opt-btn.active-teal   { border-color: var(--teal);   color: var(--teal);   background: var(--teal-bg);   font-weight: 600; }
+    .opt-btn.active-coral  { border-color: var(--coral);  color: var(--coral);  background: var(--coral-bg);  font-weight: 600; }
+
+    /* ── Generate button ───────────────────────────────────────────────────── */
+    .generate-btn {
+      width: 100%; padding: 11px;
+      font-size: 14px; font-weight: 600; font-family: inherit;
+      background: var(--purple); color: white;
+      border: none; border-radius: 10px;
+      cursor: pointer; transition: background 0.15s;
+    }
+    .generate-btn:hover { background: var(--purple-dark); }
+    .generate-btn:disabled { background: var(--border); color: var(--text-3); cursor: not-allowed; }
+
+    /* ── Canvas panel ──────────────────────────────────────────────────────── */
+    .canvas-panel { display: flex; flex-direction: column; gap: 16px; }
+    .canvas-meta { display: flex; align-items: center; justify-content: space-between; font-size: 12px; color: var(--text-2); }
+
+    .preview-box {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      min-height: 460px;
+      display: flex; align-items: center; justify-content: center;
+      overflow: hidden;
+      transition: background 0.2s, border-color 0.2s;
+    }
+
+    /* ── Placeholder ───────────────────────────────────────────────────────── */
+    .placeholder { display: flex; flex-direction: column; align-items: center; gap: 14px; color: var(--text-2); }
+    .placeholder-icon {
+      width: 64px; height: 64px; border-radius: 50%;
+      background: var(--surface-2); border: 1px solid var(--border);
+      display: flex; align-items: center; justify-content: center; font-size: 28px;
+    }
+    .placeholder p { font-size: 14px; }
+    .placeholder small { font-size: 12px; color: var(--text-3); }
+
+    /* ── Loading ───────────────────────────────────────────────────────────── */
+    .loading { display: none; flex-direction: column; align-items: center; gap: 16px; }
+    .spinner {
+      width: 36px; height: 36px;
+      border: 3px solid var(--border);
+      border-top-color: var(--purple);
+      border-radius: 50%;
+      animation: spin 0.75s linear infinite;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    .loading p { font-size: 14px; color: var(--text-2); }
+
+    /* ── Text result (Anthropic) ───────────────────────────────────────────── */
+    .text-result { display: none; flex-direction: column; align-items: center; gap: 16px; padding: 32px; width: 100%; }
+    .sticker-description {
+      background: var(--amber-bg); border: 1px solid var(--amber);
+      border-radius: 16px; padding: 20px 24px;
+      font-size: 15px; line-height: 1.7; color: var(--text-1);
+      text-align: center; max-width: 480px; font-style: italic;
+    }
+    .sticker-description::before { content: '"'; font-size: 32px; color: var(--amber); display: block; line-height: 1; margin-bottom: 4px; }
+    .anthropic-note { font-size: 12px; color: var(--text-2); text-align: center; }
+
+    /* ── Image result ──────────────────────────────────────────────────────── */
+    .sticker-output { display: none; flex-direction: column; align-items: center; padding: 24px; }
+    .canvas-wrap {
+      background-image:
+        linear-gradient(45deg, var(--checker-a) 25%, var(--checker-b) 25%),
+        linear-gradient(-45deg, var(--checker-a) 25%, var(--checker-b) 25%),
+        linear-gradient(45deg, var(--checker-b) 75%, var(--checker-a) 75%),
+        linear-gradient(-45deg, var(--checker-b) 75%, var(--checker-a) 75%);
+      background-size: 16px 16px;
+      background-position: 0 0, 0 8px, 8px -8px, -8px 0;
+      border-radius: 8px; padding: 16px;
+    }
+    #outputCanvas { display: block; max-width: 380px; max-height: 380px; }
+
+    /* ── Action buttons ────────────────────────────────────────────────────── */
+    .action-row { display: flex; gap: 8px; }
+    .action-btn {
+      flex: 1; padding: 10px; font-size: 13px; font-family: inherit;
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: 10px; cursor: pointer; color: var(--text-1);
+      transition: all 0.15s; font-weight: 500;
+    }
+    .action-btn:hover { background: var(--surface-2); }
+    .action-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+    .action-btn.primary { background: var(--purple-dark); color: white; border-color: transparent; }
+    .action-btn.primary:hover { background: var(--purple); }
+
+    /* ── Status ────────────────────────────────────────────────────────────── */
+    .status { font-size: 12px; color: var(--text-2); min-height: 18px; text-align: right; }
+    .status.error { color: var(--red); }
+    .status.ok { color: var(--teal); }
+
+    /* ── Responsive ────────────────────────────────────────────────────────── */
+    @media (max-width: 740px) {
+      .layout { grid-template-columns: 1fr; padding: 0 12px; }
+      .sidebar { position: static; }
+    }
+  </style>
+</head>
+<body>
+
+<header>
+  <span class="logo">✦</span>
+  <h1>Sticker Creator</h1>
+  <div class="header-right">
+    <div class="provider-badge">
+      <div class="provider-dot" id="headerDot"></div>
+      <span id="headerProvider">Loading...</span>
+    </div>
+    <button class="theme-toggle" id="themeToggle" title="Toggle dark mode">🌙</button>
+  </div>
+</header>
+
+<div class="layout">
+  <aside class="sidebar">
+    <h2>Design your sticker</h2>
+
+    <div class="field">
+      <label for="prompt">Describe your sticker</label>
+      <textarea id="prompt" placeholder="e.g. a happy corgi wearing sunglasses, kawaii style"></textarea>
+    </div>
+
+    <hr class="section-divider" />
+
+    <div class="field">
+      <label>AI Provider</label>
+      <div class="provider-grid" id="providerGroup"></div>
+    </div>
+
+    <div class="field">
+      <label for="modelSelect">Model</label>
+      <select id="modelSelect"></select>
+    </div>
+
+    <hr class="section-divider" />
+
+    <div class="field">
+      <label>Shape</label>
+      <div class="btn-grid-4" id="shapeGroup">
+        <button class="opt-btn active-purple" data-val="circle">Circle</button>
+        <button class="opt-btn" data-val="square">Square</button>
+        <button class="opt-btn" data-val="rounded">Rounded</button>
+        <button class="opt-btn" data-val="hex">Hex</button>
+      </div>
+    </div>
+
+    <div class="field">
+      <label>Print size</label>
+      <div class="btn-grid-2" id="sizeGroup">
+        <button class="opt-btn active-teal" data-val="2x2">2″ × 2″</button>
+        <button class="opt-btn" data-val="3x3">3″ × 3″</button>
+        <button class="opt-btn" data-val="2x3">2″ × 3″</button>
+        <button class="opt-btn" data-val="4x4">4″ × 4″</button>
+      </div>
+    </div>
+
+    <div class="field">
+      <label>Border</label>
+      <div class="btn-grid-3" id="borderGroup">
+        <button class="opt-btn active-coral" data-val="white">White</button>
+        <button class="opt-btn" data-val="thick">Thick</button>
+        <button class="opt-btn" data-val="none">None</button>
+      </div>
+    </div>
+
+    <div class="field">
+      <label for="labelText">Label text (optional)</label>
+      <input type="text" id="labelText" placeholder="e.g. Good vibes only" />
+    </div>
+
+    <button class="generate-btn" id="generateBtn" disabled>Generate sticker</button>
+  </aside>
+
+  <main class="canvas-panel">
+    <div class="canvas-meta">
+      <span id="sizeLabel">Print size: 2″ × 2″ (600×600 px @ 300 dpi)</span>
+      <span class="status" id="statusMsg"></span>
+    </div>
+
+    <div class="preview-box" id="previewBox">
+      <div class="placeholder" id="placeholder">
+        <div class="placeholder-icon">✦</div>
+        <p>Your sticker will appear here</p>
+        <small>Select a provider and hit Generate</small>
+      </div>
+      <div class="loading" id="loadingState">
+        <div class="spinner"></div>
+        <p id="loadingMsg">Generating your sticker...</p>
+      </div>
+      <div class="sticker-output" id="stickerOutput">
+        <div class="canvas-wrap">
+          <canvas id="outputCanvas"></canvas>
+        </div>
+      </div>
+      <div class="text-result" id="textResult">
+        <div class="sticker-description" id="descriptionText"></div>
+        <p class="anthropic-note">Claude described your sticker above. Switch to Google Gemini for actual image generation.</p>
+      </div>
+    </div>
+
+    <div class="action-row">
+      <button class="action-btn" id="btnPNG" disabled>Download PNG</button>
+      <button class="action-btn" id="btnSheet" disabled>4-up print sheet</button>
+      <button class="action-btn primary" id="btnHiRes" disabled>Save print-ready</button>
+    </div>
+  </main>
+</div>
+
+<script>
+  // ── Dark mode ──────────────────────────────────────────────────────────────
+  const html = document.documentElement;
+  const toggleBtn = document.getElementById('themeToggle');
+
+  function applyTheme(theme) {
+    html.setAttribute('data-theme', theme);
+    toggleBtn.textContent = theme === 'dark' ? '☀️' : '🌙';
+    toggleBtn.title = theme === 'dark' ? 'Switch to light mode' : 'Switch to dark mode';
+    localStorage.setItem('theme', theme);
+  }
+
+  // Load saved preference, fallback to system preference
+  const saved = localStorage.getItem('theme');
+  const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+  applyTheme(saved || (prefersDark ? 'dark' : 'light'));
+
+  toggleBtn.addEventListener('click', () => {
+    applyTheme(html.getAttribute('data-theme') === 'dark' ? 'light' : 'dark');
+  });
+
+  // Also respond to OS-level changes if no saved preference
+  window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', e => {
+    if (!localStorage.getItem('theme')) applyTheme(e.matches ? 'dark' : 'light');
+  });
+
+  // ── State ──────────────────────────────────────────────────────────────────
+  let shape = 'circle', size = '2x2', border = 'white';
+  let selectedProvider = '';
+  let selectedModel = '';
+  let rawImageB64 = null, rawMimeType = 'image/png';
+  let providers = [];
+
+  const sizeMap = {
+    '2x2': { w:600,  h:600,  label:'2″ × 2″ (600×600 px @ 300 dpi)' },
+    '3x3': { w:900,  h:900,  label:'3″ × 3″ (900×900 px @ 300 dpi)' },
+    '2x3': { w:600,  h:900,  label:'2″ × 3″ (600×900 px @ 300 dpi)' },
+    '4x4': { w:1200, h:1200, label:'4″ × 4″ (1200×1200 px @ 300 dpi)' },
+  };
+
+  // ── Boot ───────────────────────────────────────────────────────────────────
+  async function boot() {
+    try {
+      const res = await fetch('/api/config');
+      const cfg = await res.json();
+      providers = cfg.providers;
+      buildProviderUI(cfg.defaultProvider);
+    } catch (e) {
+      setStatus('Failed to load config: ' + e.message, 'error');
+    }
+  }
+
+  function buildProviderUI(defaultProvider) {
+    const group = document.getElementById('providerGroup');
+    group.innerHTML = '';
+    providers.forEach(p => {
+      const card = document.createElement('div');
+      card.className = 'provider-card' + (p.available ? '' : ' unavailable');
+      card.dataset.id = p.id;
+      card.innerHTML = `
+        <div class="pc-name">${p.label}</div>
+        <div class="pc-sub">${p.id === 'gemini' ? 'Image generation' : 'Text description'}</div>
+        <div class="pc-status ${p.available ? 'configured' : 'missing'}">${p.available ? '● Key configured' : '○ No API key'}</div>`;
+      if (p.available) card.addEventListener('click', () => selectProvider(p.id));
+      group.appendChild(card);
+    });
+    const toSelect = providers.find(p => p.id === defaultProvider && p.available)
+      || providers.find(p => p.available);
+    if (toSelect) selectProvider(toSelect.id);
+  }
+
+  function selectProvider(id) {
+    selectedProvider = id;
+    document.querySelectorAll('.provider-card').forEach(c => {
+      c.classList.toggle('active', c.dataset.id === id);
+    });
+    const p = providers.find(p => p.id === id);
+    const sel = document.getElementById('modelSelect');
+    sel.innerHTML = '';
+    if (p) {
+      p.models.forEach(m => {
+        const opt = document.createElement('option');
+        opt.value = m.id; opt.textContent = m.label;
+        sel.appendChild(opt);
+      });
+      selectedModel = p.models[0]?.id || '';
+    }
+    document.getElementById('headerProvider').textContent = p?.label || id;
+    document.getElementById('headerDot').className = 'provider-dot ok';
+    document.getElementById('generateBtn').disabled = false;
+  }
+
+  document.getElementById('modelSelect').addEventListener('change', e => { selectedModel = e.target.value; });
+
+  // ── Option buttons ─────────────────────────────────────────────────────────
+  function wireGroup(groupId, activeClass, cb) {
+    document.getElementById(groupId).addEventListener('click', e => {
+      const btn = e.target.closest('.opt-btn');
+      if (!btn) return;
+      document.querySelectorAll(`#${groupId} .opt-btn`).forEach(b => b.className = 'opt-btn');
+      btn.classList.add(activeClass);
+      cb(btn.dataset.val);
+    });
+  }
+  wireGroup('shapeGroup',  'opt-btn active-purple', v => { shape  = v; if (rawImageB64) renderCanvas(); });
+  wireGroup('sizeGroup',   'opt-btn active-teal',   v => { size   = v; document.getElementById('sizeLabel').textContent = 'Print size: ' + sizeMap[v].label; });
+  wireGroup('borderGroup', 'opt-btn active-coral',  v => { border = v; if (rawImageB64) renderCanvas(); });
+  document.getElementById('labelText').addEventListener('input', () => { if (rawImageB64) renderCanvas(); });
+
+  // ── Generate ───────────────────────────────────────────────────────────────
+  document.getElementById('generateBtn').addEventListener('click', generate);
+
+  async function generate() {
+    const prompt = document.getElementById('prompt').value.trim();
+    if (!prompt) { document.getElementById('prompt').focus(); return; }
+
+    setStatus(''); showState('loading'); setDownloads(false);
+    rawImageB64 = null;
+    document.getElementById('generateBtn').disabled = true;
+
+    const msgs = ['Sending to ' + selectedProvider + '...', 'Creating your sticker...', 'Almost there...'];
+    let mi = 0;
+    const ticker = setInterval(() => {
+      document.getElementById('loadingMsg').textContent = msgs[Math.min(mi++, msgs.length-1)];
+    }, 3000);
+
+    try {
+      const res = await fetch('/api/generate', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ prompt, provider: selectedProvider, model: selectedModel }),
+      });
+      const data = await res.json();
+      clearInterval(ticker);
+      if (data.error) throw new Error(data.error);
+
+      if (data.imageB64) {
+        rawImageB64 = data.imageB64;
+        rawMimeType = data.mimeType || 'image/png';
+        await renderCanvas();
+        showState('image'); setDownloads(true);
+        setStatus('Ready to print!', 'ok');
+      } else if (data.text) {
+        document.getElementById('descriptionText').textContent = data.text;
+        showState('text');
+        setStatus('Description generated by Claude', 'ok');
+      }
+    } catch (err) {
+      clearInterval(ticker);
+      showState('placeholder');
+      setStatus('Error: ' + err.message, 'error');
+    }
+    document.getElementById('generateBtn').disabled = false;
+  }
+
+  // ── Canvas ─────────────────────────────────────────────────────────────────
+  async function renderCanvas() {
+    const canvas = document.getElementById('outputCanvas');
+    const S = 380;
+    canvas.width = S; canvas.height = S;
+    const ctx = canvas.getContext('2d');
+    ctx.clearRect(0, 0, S, S);
+    const img = await loadImg(`data:${rawMimeType};base64,${rawImageB64}`);
+    const label = document.getElementById('labelText').value.trim();
+    const bw = border === 'thick' ? 18 : border === 'white' ? 8 : 0;
+    const inset = bw + 4;
+    const cx = S/2, cy = S/2, r = S/2 - inset;
+    if (bw > 0) { ctx.fillStyle = 'white'; ctx.beginPath(); stickerPath(ctx, shape, cx, cy, r+bw, S, S); ctx.fill(); }
+    ctx.save(); ctx.beginPath(); stickerPath(ctx, shape, cx, cy, r, S, S); ctx.clip();
+    ctx.drawImage(img, inset, inset, S-inset*2, S-inset*2); ctx.restore();
+    ctx.strokeStyle = 'rgba(0,0,0,0.13)'; ctx.lineWidth = 2;
+    ctx.beginPath(); stickerPath(ctx, shape, cx, cy, r, S, S); ctx.stroke();
+    if (label) {
+      const fs = Math.round(S * 0.072);
+      ctx.font = `bold ${fs}px -apple-system, sans-serif`;
+      ctx.textAlign = 'center'; ctx.textBaseline = 'bottom';
+      const tw = ctx.measureText(label).width;
+      ctx.fillStyle = 'rgba(0,0,0,0.45)';
+      ctx.fillRect(cx - tw/2 - 10, cy + r - fs - 14, tw + 20, fs + 12);
+      ctx.fillStyle = 'white';
+      ctx.fillText(label, cx, cy + r - 8);
+    }
+  }
+
+  function stickerPath(ctx, shape, cx, cy, r) {
+    if (shape === 'circle') { ctx.arc(cx, cy, r, 0, Math.PI*2); }
+    else if (shape === 'square') { ctx.rect(cx-r, cy-r, r*2, r*2); }
+    else if (shape === 'rounded') { ctx.roundRect(cx-r, cy-r, r*2, r*2, r*0.25); }
+    else if (shape === 'hex') {
+      for (let i = 0; i < 6; i++) {
+        const a = Math.PI/180*(60*i-30);
+        i===0 ? ctx.moveTo(cx+r*Math.cos(a), cy+r*Math.sin(a))
+              : ctx.lineTo(cx+r*Math.cos(a), cy+r*Math.sin(a));
+      }
+      ctx.closePath();
+    }
+  }
+
+  function loadImg(src) {
+    return new Promise((res, rej) => {
+      const img = new Image();
+      img.onload = () => res(img); img.onerror = rej; img.src = src;
+    });
+  }
+
+  // ── UI helpers ─────────────────────────────────────────────────────────────
+  function showState(state) {
+    document.getElementById('placeholder').style.display    = state==='placeholder' ? 'flex' : 'none';
+    document.getElementById('loadingState').style.display   = state==='loading'     ? 'flex' : 'none';
+    document.getElementById('stickerOutput').style.display  = state==='image'       ? 'flex' : 'none';
+    document.getElementById('textResult').style.display     = state==='text'        ? 'flex' : 'none';
+  }
+  function setDownloads(on) {
+    ['btnPNG','btnSheet','btnHiRes'].forEach(id => document.getElementById(id).disabled = !on);
+  }
+  function setStatus(msg, type='') {
+    const el = document.getElementById('statusMsg');
+    el.textContent = msg;
+    el.className = 'status' + (type ? ' '+type : '');
+  }
+
+  // ── Downloads ──────────────────────────────────────────────────────────────
+  async function buildPrintCanvas(scale=1) {
+    const dim = sizeMap[size];
+    const W = dim.w*scale, H = dim.h*scale;
+    const c = document.createElement('canvas');
+    c.width = W; c.height = H;
+    const ctx = c.getContext('2d');
+    ctx.fillStyle = 'white'; ctx.fillRect(0, 0, W, H);
+    const img = await loadImg(`data:${rawMimeType};base64,${rawImageB64}`);
+    const label = document.getElementById('labelText').value.trim();
+    const cx=W/2, cy=H/2;
+    const bw = border==='thick' ? Math.round(W*0.03) : border==='white' ? Math.round(W*0.013) : 0;
+    const inset = bw + Math.round(W*0.007);
+    const r = Math.min(W,H)/2 - inset;
+    if (bw>0) { ctx.fillStyle='white'; ctx.beginPath(); stickerPath(ctx,shape,cx,cy,r+bw); ctx.fill(); }
+    ctx.save(); ctx.beginPath(); stickerPath(ctx,shape,cx,cy,r); ctx.clip();
+    ctx.drawImage(img, inset, inset, W-inset*2, H-inset*2); ctx.restore();
+    ctx.strokeStyle='rgba(0,0,0,0.12)'; ctx.lineWidth=Math.max(2,W*0.003);
+    ctx.beginPath(); stickerPath(ctx,shape,cx,cy,r); ctx.stroke();
+    if (label) {
+      const fs=Math.round(W*0.072);
+      ctx.font=`bold ${fs}px Arial,sans-serif`; ctx.textAlign='center'; ctx.textBaseline='bottom';
+      const tw=ctx.measureText(label).width;
+      ctx.fillStyle='rgba(0,0,0,0.45)'; ctx.fillRect(cx-tw/2-10,cy+r-fs-14,tw+20,fs+12);
+      ctx.fillStyle='white'; ctx.fillText(label,cx,cy+r-8);
+    }
+    return c;
+  }
+
+  document.getElementById('btnPNG').addEventListener('click', async () => {
+    if (!rawImageB64) return;
+    dlCanvas(await buildPrintCanvas(1), `sticker-${size}.png`);
+  });
+  document.getElementById('btnHiRes').addEventListener('click', async () => {
+    if (!rawImageB64) return;
+    dlCanvas(await buildPrintCanvas(2), `sticker-hires-${size}.png`);
+  });
+  document.getElementById('btnSheet').addEventListener('click', async () => {
+    if (!rawImageB64) return;
+    const dim = sizeMap[size]; const gap=30, margin=40;
+    const sw=dim.w*2+gap*3+margin*2, sh=dim.h*2+gap*3+margin*2;
+    const src = await buildPrintCanvas(1);
+    const sheet = document.createElement('canvas'); sheet.width=sw; sheet.height=sh;
+    const ctx = sheet.getContext('2d'); ctx.fillStyle='white'; ctx.fillRect(0,0,sw,sh);
+    [[margin+gap,margin+gap],[margin+gap*2+dim.w,margin+gap],
+     [margin+gap,margin+gap*2+dim.h],[margin+gap*2+dim.w,margin+gap*2+dim.h]
+    ].forEach(([x,y]) => ctx.drawImage(src,x,y,dim.w,dim.h));
+    dlCanvas(sheet, `sticker-sheet-4up.png`);
+  });
+
+  function dlCanvas(canvas, filename) {
+    const a = document.createElement('a');
+    a.download = filename; a.href = canvas.toDataURL('image/png'); a.click();
+  }
+
+  boot();
+</script>
+</body>
+</html>
