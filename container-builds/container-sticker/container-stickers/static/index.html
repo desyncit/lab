@@ -7,7 +7,6 @@
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
-    /* ── Theme variables ───────────────────────────────────────────────────── */
     :root, [data-theme="light"] {
       --bg:           #F7F6F3;
       --surface:      #ffffff;
@@ -60,7 +59,6 @@
       --checker-b:    transparent;
     }
 
-    /* ── Base ──────────────────────────────────────────────────────────────── */
     body {
       font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
       background: var(--bg);
@@ -71,7 +69,6 @@
       transition: background 0.2s, color 0.2s;
     }
 
-    /* ── Header ────────────────────────────────────────────────────────────── */
     header {
       background: var(--surface);
       border-bottom: 1px solid var(--border);
@@ -104,7 +101,6 @@
     }
     .theme-toggle:hover { border-color: var(--purple); background: var(--purple-bg); }
 
-    /* ── Layout ────────────────────────────────────────────────────────────── */
     .layout {
       display: grid;
       grid-template-columns: 330px 1fr;
@@ -117,7 +113,6 @@
       gap: 20px;
     }
 
-    /* ── Sidebar ───────────────────────────────────────────────────────────── */
     .sidebar {
       background: var(--surface);
       border-radius: 16px;
@@ -132,8 +127,6 @@
     }
     .sidebar h2 { font-size: 14px; font-weight: 600; color: var(--text-1); }
     .section-divider { border: none; border-top: 1px solid var(--border); margin: 2px 0; }
-
-    /* ── Form fields ───────────────────────────────────────────────────────── */
     .field { display: flex; flex-direction: column; gap: 5px; }
     .field label { font-size: 12px; color: var(--text-2); font-weight: 500; }
 
@@ -163,8 +156,6 @@
       cursor: pointer;
     }
     select:disabled { opacity: 0.5; cursor: not-allowed; }
-
-    /* ── Provider cards ────────────────────────────────────────────────────── */
     .provider-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
     .provider-card {
       padding: 10px 12px;
@@ -183,8 +174,6 @@
     .provider-card .pc-status { font-size: 10px; margin-top: 4px; }
     .provider-card .pc-status.configured { color: var(--teal); }
     .provider-card .pc-status.missing { color: var(--red); }
-
-    /* ── Option buttons ────────────────────────────────────────────────────── */
     .btn-grid-4 { display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; }
     .btn-grid-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; }
     .btn-grid-2 { display: grid; grid-template-columns: repeat(2, 1fr); gap: 6px; }
@@ -206,7 +195,6 @@
     .opt-btn.active-teal   { border-color: var(--teal);   color: var(--teal);   background: var(--teal-bg);   font-weight: 600; }
     .opt-btn.active-coral  { border-color: var(--coral);  color: var(--coral);  background: var(--coral-bg);  font-weight: 600; }
 
-    /* ── Generate button ───────────────────────────────────────────────────── */
     .generate-btn {
       width: 100%; padding: 11px;
       font-size: 14px; font-weight: 600; font-family: inherit;
@@ -217,7 +205,6 @@
     .generate-btn:hover { background: var(--purple-dark); }
     .generate-btn:disabled { background: var(--border); color: var(--text-3); cursor: not-allowed; }
 
-    /* ── Canvas panel ──────────────────────────────────────────────────────── */
     .canvas-panel { display: flex; flex-direction: column; gap: 16px; }
     .canvas-meta { display: flex; align-items: center; justify-content: space-between; font-size: 12px; color: var(--text-2); }
 
@@ -231,7 +218,6 @@
       transition: background 0.2s, border-color 0.2s;
     }
 
-    /* ── Placeholder ───────────────────────────────────────────────────────── */
     .placeholder { display: flex; flex-direction: column; align-items: center; gap: 14px; color: var(--text-2); }
     .placeholder-icon {
       width: 64px; height: 64px; border-radius: 50%;
@@ -241,7 +227,6 @@
     .placeholder p { font-size: 14px; }
     .placeholder small { font-size: 12px; color: var(--text-3); }
 
-    /* ── Loading ───────────────────────────────────────────────────────────── */
     .loading { display: none; flex-direction: column; align-items: center; gap: 16px; }
     .spinner {
       width: 36px; height: 36px;
@@ -253,7 +238,6 @@
     @keyframes spin { to { transform: rotate(360deg); } }
     .loading p { font-size: 14px; color: var(--text-2); }
 
-    /* ── Text result (Anthropic) ───────────────────────────────────────────── */
     .text-result { display: none; flex-direction: column; align-items: center; gap: 16px; padding: 32px; width: 100%; }
     .sticker-description {
       background: var(--amber-bg); border: 1px solid var(--amber);
@@ -264,7 +248,6 @@
     .sticker-description::before { content: '"'; font-size: 32px; color: var(--amber); display: block; line-height: 1; margin-bottom: 4px; }
     .anthropic-note { font-size: 12px; color: var(--text-2); text-align: center; }
 
-    /* ── Image result ──────────────────────────────────────────────────────── */
     .sticker-output { display: none; flex-direction: column; align-items: center; padding: 24px; }
     .canvas-wrap {
       background-image:
@@ -278,7 +261,6 @@
     }
     #outputCanvas { display: block; max-width: 380px; max-height: 380px; }
 
-    /* ── Action buttons ────────────────────────────────────────────────────── */
     .action-row { display: flex; gap: 8px; }
     .action-btn {
       flex: 1; padding: 10px; font-size: 13px; font-family: inherit;
@@ -291,12 +273,10 @@
     .action-btn.primary { background: var(--purple-dark); color: white; border-color: transparent; }
     .action-btn.primary:hover { background: var(--purple); }
 
-    /* ── Status ────────────────────────────────────────────────────────────── */
     .status { font-size: 12px; color: var(--text-2); min-height: 18px; text-align: right; }
     .status.error { color: var(--red); }
     .status.ok { color: var(--teal); }
 
-    /* ── Responsive ────────────────────────────────────────────────────────── */
     @media (max-width: 740px) {
       .layout { grid-template-columns: 1fr; padding: 0 12px; }
       .sidebar { position: static; }
@@ -413,7 +393,6 @@
 </div>
 
 <script>
-  // ── Dark mode ──────────────────────────────────────────────────────────────
   const html = document.documentElement;
   const toggleBtn = document.getElementById('themeToggle');
 
@@ -424,7 +403,6 @@
     localStorage.setItem('theme', theme);
   }
 
-  // Load saved preference, fallback to system preference
   const saved = localStorage.getItem('theme');
   const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
   applyTheme(saved || (prefersDark ? 'dark' : 'light'));
@@ -433,12 +411,10 @@
     applyTheme(html.getAttribute('data-theme') === 'dark' ? 'light' : 'dark');
   });
 
-  // Also respond to OS-level changes if no saved preference
   window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', e => {
     if (!localStorage.getItem('theme')) applyTheme(e.matches ? 'dark' : 'light');
   });
 
-  // ── State ──────────────────────────────────────────────────────────────────
   let shape = 'circle', size = '2x2', border = 'white';
   let selectedProvider = '';
   let selectedModel = '';
@@ -452,7 +428,6 @@
     '4x4': { w:1200, h:1200, label:'4″ × 4″ (1200×1200 px @ 300 dpi)' },
   };
 
-  // ── Boot ───────────────────────────────────────────────────────────────────
   async function boot() {
     try {
       const res = await fetch('/api/config');
@@ -506,7 +481,6 @@
 
   document.getElementById('modelSelect').addEventListener('change', e => { selectedModel = e.target.value; });
 
-  // ── Option buttons ─────────────────────────────────────────────────────────
   function wireGroup(groupId, activeClass, cb) {
     document.getElementById(groupId).addEventListener('click', e => {
       const btn = e.target.closest('.opt-btn');
@@ -521,7 +495,6 @@
   wireGroup('borderGroup', 'opt-btn active-coral',  v => { border = v; if (rawImageB64) renderCanvas(); });
   document.getElementById('labelText').addEventListener('input', () => { if (rawImageB64) renderCanvas(); });
 
-  // ── Generate ───────────────────────────────────────────────────────────────
   document.getElementById('generateBtn').addEventListener('click', generate);
 
   async function generate() {
@@ -567,7 +540,6 @@
     document.getElementById('generateBtn').disabled = false;
   }
 
-  // ── Canvas ─────────────────────────────────────────────────────────────────
   async function renderCanvas() {
     const canvas = document.getElementById('outputCanvas');
     const S = 380;
@@ -617,7 +589,6 @@
     });
   }
 
-  // ── UI helpers ─────────────────────────────────────────────────────────────
   function showState(state) {
     document.getElementById('placeholder').style.display    = state==='placeholder' ? 'flex' : 'none';
     document.getElementById('loadingState').style.display   = state==='loading'     ? 'flex' : 'none';
@@ -633,7 +604,6 @@
     el.className = 'status' + (type ? ' '+type : '');
   }
 
-  // ── Downloads ──────────────────────────────────────────────────────────────
   async function buildPrintCanvas(scale=1) {
     const dim = sizeMap[size];
     const W = dim.w*scale, H = dim.h*scale;
