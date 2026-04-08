@@ -1,4 +1,8 @@
 ---
+- name: Debug all variables
+  ansible.builtin.debug:
+    var: hostvars[inventory_hostname]
+
 - name: Getting cluster info
   community.okd.k8s:
     host: "{{ k8s_auth_host }}"
