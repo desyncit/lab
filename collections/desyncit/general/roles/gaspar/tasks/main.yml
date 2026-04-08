@@ -1,4 +1,4 @@
 ---
 - name: Include login test
-  ansible.builtin.include_role:
-    name: checks.yml
+  ansible.builtin.include_tasks:
+    file: checks.yml

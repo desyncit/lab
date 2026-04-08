@@ -3,9 +3,9 @@ galaxy_info:
   author: Justin Herron
   description: Manage deployments on the Tampa devs cloud
   company: Tampa Devs
-  issue_tracker_url: https://github.com/desyncit/lab/issues 
+  issue_tracker_url: https://github.com/desyncit/lab/issues
   license: CC-BY-4.0
-  min_ansible_version: 2.15
+  min_ansible_version: "2.15"
   galaxy_tags:
     - infrastructure
     - tampadevscloud

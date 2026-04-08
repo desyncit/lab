@@ -11,4 +11,3 @@
   when: cluster_info.resources | length == 0
   ansible.builtin.fail:
     msg: "Unable to connect to OpenShift cluster at {{ k8s_auth_api_key }}. Check your token and API URL."
-  
