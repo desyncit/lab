@@ -1,0 +1,14 @@
+---
+- name: Getting cluster info
+  community.okd.k8s_info:
+    host: "{{ k8s_auth_host }}"
+    api_key: "{{ k8s_auth_api_key }}"
+    validate_certs: "{{ k8s_auth_verify_ssl }}"
+    kind: Namespace
+  register: cluster_info
+
+- name: Fail if no namespaces returned
+  when: cluster_info.resources | length == 0
+  ansible.builtin.fail:
+    msg: "Unable to connect to OpenShift cluster at {{ k8s_auth_api_key }}. Check your token and API URL."
+  

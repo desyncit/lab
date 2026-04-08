@@ -1,0 +1,6 @@
+---
+- name: Local test for role
+  hosts: localhost
+  remote_user: root
+  roles:
+    - gaspar
