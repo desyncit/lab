@@ -1,7 +1,7 @@
 ---
 namespace: desyncit
 name: general
-version: 1.0.11
+version: 1.0.12
 readme: README.md
 authors:
 - Justin Herron <jherron@net-dev.net>

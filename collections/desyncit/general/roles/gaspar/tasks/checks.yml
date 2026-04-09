@@ -12,7 +12,7 @@
 - name: Fail if no version returned
   ansible.builtin.assert:
     that:
-      - cluster_facts.version.server is defined
-      - cluster_facts.version.server | length > 0
+      - gaspar_cluster_facts.version.server is defined
+      - gaspar_cluster_facts.version.server | length > 0
     fail_msg: "Could not connect to cluster"
     success_msg: "Successfully connected to {{ gaspar_cluster_facts.connection.host }}"
