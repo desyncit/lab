@@ -1,0 +1,85 @@
+---
+- name: Create namespace
+  kubernetes.core.k8s:
+    state: present
+    definition:
+      apiVersion: v1
+      kind: Namespace
+      metadata:
+        name: "{{ gaspar_namespace }}"
+
+
+- name: Create deployment
+  kubernetes.core.k8s:
+    state: present
+    definition:
+      apiVersion: apps/v1
+      kind: Deployment
+      metadata:
+        name: "{{ gaspar_app_name }}"
+        namespace: "{{ gaspar_namespace }}"
+        labels:
+          app: "{{ gaspar_app_name }}"
+      spec:
+        replicas: "{{ gaspar_replica_count }}"
+        selector:
+          matchLabels:
+            app: "{{ gaspar_app_name }}"
+        template:
+          metadata:
+            labels:
+              app: "{{ gaspar_app_name }}"
+          spec:
+            containers:
+              - name: "{{ gaspar_app_name }}"
+                image: "{{ gaspar_image }}"
+                ports:
+                  - containerPort: "{{ gaspar_port }}"
+
+- name: Create service
+  kubernetes.core.k8s:
+    state: present
+    definition:
+      apiVersion: v1
+      kind: Service
+      metadata:
+        name: "{{ gaspar_app_name }}"
+        namespace: "{{ gaspar_namespace }}"
+      spec:
+        selector:
+          app: "{{ gaspar_app_name }}"
+        ports:
+          - protocol: TCP
+            port: "{{ gaspar_port }}"
+            targetPort: "{{ gaspar_port }}"
+
+- name: Create route
+  kubernetes.core.k8s:
+    state: present
+    definition:
+      apiVersion: route.openshift.io/v1
+      kind: Route
+      metadata:
+        name: "{{ gaspar_app_name }}"
+        namespace: "{{ gaspar_namespace }}"
+      spec:
+        to:
+          kind: Service
+          name: "{{ gaspar_app_name }}"
+        port:
+          targetPort: "{{ gaspar_port }}"
+        tls:
+          termination: edge
+          insecureEdgeTerminationPolicy: Redirect
+
+- name: Show route
+  kubernetes.core.k8s_info:
+    kind: Route
+    api_version: route.openshift.io/v1
+    namespace: "{{ gaspar_namespace }}"
+    name: "{{ gaspar_app_name }}"
+  register: gaspar_route_info
+
+- name: Display route URL
+  ansible.builtin.debug:
+    msg: "App available at: https://{{ gaspar_route_info.resources[0].spec.host }}"
