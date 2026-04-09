@@ -1,5 +1,4 @@
 ---
----
 - name: Create namespace
   kubernetes.core.k8s:
     state: present
