@@ -1,13 +1,18 @@
 ---
 - name: Test cluster login
   kubernetes.core.k8s_cluster_info:
-  register: cluster_info
+  register: gaspar_cluster_facts
 
-- name: Show cluster info
+- name: Verify login successful
   ansible.builtin.debug:
-    var: cluster_info
+    msg:
+      host: "{{ gaspar_cluster_facts.connection.host }}"
+      api_version: "{{ gaspar_cluster_facts.version.server }}"
 
-- name: Fail if no namespaces returned
-  when: cluster_info.resources | length == 0
-  ansible.builtin.fail:
-    msg: "Unable to connect to OpenShift cluster at {{ k8s_auth_api_key }}. Check your token and API URL."
+- name: Fail if no version returned
+  ansible.builtin.assert:
+    that:
+      - cluster_facts.version.server is defined
+      - cluster_facts.version.server | length > 0
+    fail_msg: "Could not connect to cluster"
+    success_msg: "Successfully connected to {{ gaspar_cluster_facts.connection.host }}"
