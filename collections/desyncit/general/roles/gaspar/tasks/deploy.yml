@@ -1,4 +1,5 @@
 ---
+---
 - name: Create namespace
   kubernetes.core.k8s:
     state: present
@@ -8,6 +9,19 @@
       metadata:
         name: "{{ gaspar_namespace }}"
 
+- name: Create API keys secret
+  kubernetes.core.k8s:
+    state: present
+    definition:
+      apiVersion: v1
+      kind: Secret
+      metadata:
+        name: "{{ gaspar_app_name }}-api-keys"
+        namespace: "{{ gaspar_namespace }}"
+      type: Opaque
+      stringData:
+        ANTHROPIC_API_KEY: "{{ anthropic_api_key }}"
+        GEMINI_API_KEY: "{{ gemini_api_key }}"
 
 - name: Create deployment
   kubernetes.core.k8s:
@@ -35,6 +49,9 @@
                 image: "{{ gaspar_image }}"
                 ports:
                   - containerPort: "{{ gaspar_port }}"
+                envFrom:
+                  - secretRef:
+                      name: "{{ gaspar_app_name }}-api-keys"
 
 - name: Create service
   kubernetes.core.k8s:
@@ -78,8 +95,8 @@
     api_version: route.openshift.io/v1
     namespace: "{{ gaspar_namespace }}"
     name: "{{ gaspar_app_name }}"
-  register: gaspar_route_info
+  register: route_info
 
 - name: Display route URL
   ansible.builtin.debug:
-    msg: "App available at: https://{{ gaspar_route_info.resources[0].spec.host }}"
+    msg: "App available at: https://{{ route_info.resources[0].spec.host }}"
