@@ -1,22 +1,11 @@
 ---
-- name: Debug auth vars
-  ansible.builtin.debug:
-    msg:
-      k8s_auth_host: "{{ k8s_auth_host | default('NOT SET') }}"
-      k8s_auth_api_key: "{{ k8s_auth_api_key | default('NOT SET') }}"
-      k8s_auth_verify_ssl: "{{ k8s_auth_verify_ssl | default('NOT SET') }}"
-
-- name: Debug all variables
-  ansible.builtin.debug:
-    var: hostvars[inventory_hostname]
-
-- name: Getting cluster info
-  community.okd.k8s:
-    host: "{{ k8s_auth_host }}"
-    api_key: "{{ k8s_auth_api_key }}"
-    validate_certs: "{{ k8s_auth_verify_ssl }}"
-    kind: Namespace
+- name: Test cluster login
+  kubernetes.core.k8s_cluster_info:
   register: cluster_info
+
+- name: Show cluster info
+  ansible.builtin.debug:
+    var: cluster_info
 
 - name: Fail if no namespaces returned
   when: cluster_info.resources | length == 0
