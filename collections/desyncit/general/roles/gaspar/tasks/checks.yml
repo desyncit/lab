@@ -1,4 +1,11 @@
 ---
+- name: Debug auth vars
+  ansible.builtin.debug:
+    msg:
+      k8s_auth_host: "{{ k8s_auth_host | default('NOT SET') }}"
+      k8s_auth_api_key: "{{ k8s_auth_api_key | default('NOT SET') }}"
+      k8s_auth_verify_ssl: "{{ k8s_auth_verify_ssl | default('NOT SET') }}"
+
 - name: Debug all variables
   ansible.builtin.debug:
     var: hostvars[inventory_hostname]
