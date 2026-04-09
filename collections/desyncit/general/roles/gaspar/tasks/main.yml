@@ -1,4 +1,8 @@
 ---
-- name: Include login test
+- name: Include assertions
   ansible.builtin.include_tasks:
     file: checks.yml
+
+- name: Include deployment spec
+  ansible.builtin.include_tasks:
+    file: deploy.yml
