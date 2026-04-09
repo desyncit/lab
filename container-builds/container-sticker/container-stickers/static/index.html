@@ -431,11 +431,21 @@
   async function boot() {
     try {
       const res = await fetch('/api/config');
+      if (!res.ok) throw new Error('Server returned ' + res.status);
       const cfg = await res.json();
       providers = cfg.providers;
       buildProviderUI(cfg.defaultProvider);
     } catch (e) {
-      setStatus('Failed to load config: ' + e.message, 'error');
+      // Config fetch failed (e.g. not running through the Go server).
+      // Populate with fallback providers so the UI is usable and shows a clear error on generate.
+      providers = [
+        { id: 'gemini',    label: 'Google Gemini',    available: false,
+          models: [{ id: 'gemini-2.5-flash-image', label: 'Gemini 2.5 Flash Image' }] },
+        { id: 'anthropic', label: 'Anthropic Claude', available: false,
+          models: [{ id: 'claude-sonnet-4-6', label: 'Claude Sonnet 4.6' }] },
+      ];
+      buildProviderUI('gemini');
+      setStatus('Could not reach server — is the Go backend running?', 'error');
     }
   }
 
@@ -444,17 +454,19 @@
     group.innerHTML = '';
     providers.forEach(p => {
       const card = document.createElement('div');
+      // Allow clicking any card (available or not) so users can select and see the error on generate
       card.className = 'provider-card' + (p.available ? '' : ' unavailable');
       card.dataset.id = p.id;
       card.innerHTML = `
         <div class="pc-name">${p.label}</div>
         <div class="pc-sub">${p.id === 'gemini' ? 'Image generation' : 'Text description'}</div>
         <div class="pc-status ${p.available ? 'configured' : 'missing'}">${p.available ? '● Key configured' : '○ No API key'}</div>`;
-      if (p.available) card.addEventListener('click', () => selectProvider(p.id));
+      card.addEventListener('click', () => selectProvider(p.id));
       group.appendChild(card);
     });
-    const toSelect = providers.find(p => p.id === defaultProvider && p.available)
-      || providers.find(p => p.available);
+    const toSelect = providers.find(p => p.id === defaultProvider)
+      || providers.find(p => p.available)
+      || providers[0];
     if (toSelect) selectProvider(toSelect.id);
   }
 
@@ -475,24 +487,27 @@
       selectedModel = p.models[0]?.id || '';
     }
     document.getElementById('headerProvider').textContent = p?.label || id;
-    document.getElementById('headerDot').className = 'provider-dot ok';
+    document.getElementById('headerDot').className = 'provider-dot' + (p?.available ? ' ok' : '');
+    // Always enable the button — server returns a clear error if the key is missing
     document.getElementById('generateBtn').disabled = false;
   }
 
   document.getElementById('modelSelect').addEventListener('change', e => { selectedModel = e.target.value; });
 
+  const activeClasses = ['active-purple', 'active-teal', 'active-coral'];
+
   function wireGroup(groupId, activeClass, cb) {
     document.getElementById(groupId).addEventListener('click', e => {
       const btn = e.target.closest('.opt-btn');
       if (!btn) return;
-      document.querySelectorAll(`#${groupId} .opt-btn`).forEach(b => b.className = 'opt-btn');
+      document.querySelectorAll(`#${groupId} .opt-btn`).forEach(b => b.classList.remove(...activeClasses));
       btn.classList.add(activeClass);
       cb(btn.dataset.val);
     });
   }
-  wireGroup('shapeGroup',  'opt-btn active-purple', v => { shape  = v; if (rawImageB64) renderCanvas(); });
-  wireGroup('sizeGroup',   'opt-btn active-teal',   v => { size   = v; document.getElementById('sizeLabel').textContent = 'Print size: ' + sizeMap[v].label; });
-  wireGroup('borderGroup', 'opt-btn active-coral',  v => { border = v; if (rawImageB64) renderCanvas(); });
+  wireGroup('shapeGroup',  'active-purple', v => { shape  = v; if (rawImageB64) renderCanvas(); });
+  wireGroup('sizeGroup',   'active-teal',   v => { size   = v; document.getElementById('sizeLabel').textContent = 'Print size: ' + sizeMap[v].label; });
+  wireGroup('borderGroup', 'active-coral',  v => { border = v; if (rawImageB64) renderCanvas(); });
   document.getElementById('labelText').addEventListener('input', () => { if (rawImageB64) renderCanvas(); });
 
   document.getElementById('generateBtn').addEventListener('click', generate);
