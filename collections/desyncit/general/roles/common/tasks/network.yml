@@ -1,0 +1,28 @@
+---
+- name: Get socket statistics
+  ansible.builtin.command:
+    cmd: >-
+      ss
+      {% if linux_generic_network.ss_all %}
+      -a
+      {% elif linux_generic_network.ss_state is defined %}
+      state {{ linux_generic_network.ss_state }}
+      {% endif %}
+      {% if linux_generic_network.ss_protocol == 'tcp' %}-t
+      {% elif linux_generic_network.ss_protocol == 'udp' %}-u
+      {% endif %}
+      {% if linux_generic_network.ss_port is defined %}
+      sport = :{{ linux_generic_network.ss_port }} or dport = :{{ linux_generic_network.ss_port }}
+      {% endif %}
+      -n
+  register: linux_generic_ss_registered
+  changed_when: false
+
+- name: Register socket statistics to fact
+  ansible.builtin.set_fact:
+    linux_generic_socket_stats: "{{ linux_generic_ss_registered.stdout_lines }}"
+    cacheable: true
+
+- name: Output informational message
+  ansible.builtin.debug:
+    msg: "Socket statistics for {{ inventory_hostname }} registered to linux_generic_socket_stats"

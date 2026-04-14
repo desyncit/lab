@@ -1,0 +1,18 @@
+---
+- name: Import tasks when rhel
+  when: ansible_distribution == "RedHat"
+  block:
+
+    - name: Include checks
+      ansible.builtin.include_tasks:
+        file: checks.yml
+
+    - name: Include concatenate tasks
+      when: linux_file_content_operation == 'concatenate'
+      ansible.builtin.include_tasks:
+        file: concatenate.yml
+
+    - name: Include edit tasks
+      when: linux_file_content_operation == 'edit'
+      ansible.builtin.include_tasks:
+        file: edit.yml

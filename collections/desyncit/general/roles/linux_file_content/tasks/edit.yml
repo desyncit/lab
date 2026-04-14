@@ -1,0 +1,34 @@
+---
+- name: Edit file tasks
+  when:
+    - linux_file_content_operation == 'edit'
+  block:
+
+    - name: Edit file by line
+      when:
+        - linux_file_content_edit_mode == 'line'
+      diff: true
+      ansible.builtin.lineinfile:
+        path: "{{ linux_file_content_path }}"
+        line: "{{ linux_file_content_line }}"
+        regexp: "{{ linux_file_content_regexp | default(omit) }}"
+        backup: "{{ linux_file_content_backup }}"
+
+    - name: Edit file by replace
+      when:
+        - linux_file_content_edit_mode == 'replace'
+      diff: true
+      ansible.builtin.replace:
+        path: "{{ linux_file_content_path }}"
+        regexp: "{{ linux_file_content_regexp }}"
+        replace: "{{ linux_file_content_replace_with }}"
+        backup: "{{ linux_file_content_backup }}"
+
+    - name: Edit file with block
+      when:
+        - linux_file_content_edit_mode == 'block'
+      diff: true
+      ansible.builtin.blockinfile:
+        path: "{{ linux_file_content_path }}"
+        block: "{{ linux_file_content_block }}"
+        backup: "{{ linux_file_content_backup }}"
