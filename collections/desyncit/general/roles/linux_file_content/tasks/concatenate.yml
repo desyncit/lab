@@ -1,0 +1,15 @@
+---
+- name: Get content of remote file
+  ansible.builtin.slurp:
+    src: "{{ linux_file_content_path }}"
+  register: registered_linux_file_content_path
+
+- name: Read raw file into fact
+  ansible.builtin.set_fact:
+    linux_file_content_data: "{{ registered_linux_file_content_path.content  | b64decode }}"
+
+- name: Display information message
+  when: linux_file_content_data | length > 0
+  ansible.builtin.debug:
+    msg: | 
+      "{{ linux_file_content_path }} registered to fact linux_file_content_data"

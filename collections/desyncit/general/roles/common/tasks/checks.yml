@@ -1,268 +1,118 @@
 ---
-- name: Assertions for linux_common_manifest
-  run_once: true
+# compute.yml checks
+- name: Assert linux_generic_compute is valid
+  when: linux_generic_compute is defined
   block:
 
-    - name: Assert linux_common_manifest is defined
-      delegate_to: localhost
+    - name: Assert linux_generic_compute.process_filter is defined
       ansible.builtin.assert:
         that:
-          - linux_common_manifest is defined
-          - linux_common_manifest is sequence
-          - linux_common_manifest | length > 0
-        fail_msg: linux_common_manifest is malformed
+          - linux_generic_compute.process_filter is defined
+          - linux_generic_compute.process_filter is string
+          - linux_generic_compute.process_filter | length > 0
+        fail_msg: "Fail linux_generic_compute.process_filter is undefined or empty"
 
-    - name: Assert each manifest entry has a task and target_hosts defined
+    - name: Assert linux_generic_compute.process_kill is valid
       ansible.builtin.assert:
         that:
-          - check_item.task is defined
-          - check_item.task is string
-          - check_item.target_hosts is defined
-          - check_item.target_hosts | length > 0
-        fail_msg: >-
-          Each entry in linux_common_manifest must have 'task' and 'target_hosts' defined.
-          Offending entry: {{ check_item }}
-      loop: "{{ linux_common_manifest }}"
+          - linux_generic_compute.process_kill is defined
+          - linux_generic_compute.process_kill is boolean
+        fail_msg: "Fail linux_generic_compute.process_kill must be true or false"
+
+    - name: Assert linux_generic_compute.process_kill_signal is valid
+      when: linux_generic_compute.process_kill | bool
+      ansible.builtin.assert:
+        that:
+          - linux_generic_compute.process_kill_signal is defined
+          - linux_generic_compute.process_kill_signal is string
+          - linux_generic_compute.process_kill_signal in ['-SIGTERM', '-SIGKILL', '-SIGHUP', '-SIGSTOP']
+        fail_msg: "Fail linux_generic_compute.process_kill_signal must be -SIGTERM, -SIGKILL, -SIGHUP or -SIGSTOP"
+
+# network.yml checks
+- name: Assert linux_generic_network is valid
+  when: linux_generic_network is defined
+  block:
+
+    - name: Assert linux_generic_network.ss_all is valid
+      ansible.builtin.assert:
+        that:
+          - linux_generic_network.ss_all is defined
+          - linux_generic_network.ss_all is boolean
+        fail_msg: "Fail linux_generic_network.ss_all must be true or false"
+
+    - name: Assert linux_generic_network.ss_state is valid
+      when: not linux_generic_network.ss_all | bool
+      ansible.builtin.assert:
+        that:
+          - linux_generic_network.ss_state is defined
+          - linux_generic_network.ss_state is string
+          - linux_generic_network.ss_state in ['listening', 'established']
+        fail_msg: "Fail linux_generic_network.ss_state must be 'listening' or 'established'"
+
+    - name: Assert linux_generic_network.ss_protocol is valid
+      ansible.builtin.assert:
+        that:
+          - linux_generic_network.ss_protocol is defined
+          - linux_generic_network.ss_protocol is string
+          - linux_generic_network.ss_protocol in ['tcp', 'udp']
+        fail_msg: "Fail linux_generic_network.ss_protocol must be 'tcp' or 'udp'"
+
+    - name: Assert linux_generic_network.ss_port is valid
+      when: linux_generic_network.ss_port is defined
+      ansible.builtin.assert:
+        that:
+          - linux_generic_network.ss_port | int > 0
+          - linux_generic_network.ss_port | int <= 65535
+        fail_msg: "Fail linux_generic_network.ss_port must be a valid port number between 1 and 65535"
+
+# storage.yml checks
+- name: Assert linux_generic_storage is valid
+  when: linux_generic_storage is defined
+  block:
+
+    - name: Assert linux_generic_storage.remove_paths entries are valid
+      when: linux_generic_storage.remove_paths is defined
+      ansible.builtin.assert:
+        that:
+          - lgcrm.path is defined
+          - lgcrm.path is string
+          - lgcrm.path | length > 0
+          - lgcrm.path.startswith('/')
+          - lgcrm.yes_i_really_mean_it is defined
+          - lgcrm.yes_i_really_mean_it is boolean
+        fail_msg: "Fail linux_generic_storage.remove_paths entry is malformed: {{ lgcrm }}"
+      loop: "{{ linux_generic_storage.remove_paths }}"
       loop_control:
-        loop_var: check_item
+        loop_var: lgcrm
+        label: "{{ lgcrm.path }}"
 
-    - name: Assert copy files have required keys and are strings
-      when: >-
-        linux_common_manifest 
-        | selectattr(
-           'task',
-           'equalto',
-           'copy'
-          ) 
-        | list 
-        | length > 0
+    - name: Assert linux_generic_storage.directories entries are valid
+      when: linux_generic_storage.directories is defined
       ansible.builtin.assert:
         that:
-          - copy_item.src is defined
-          - copy_item.dest is defined
-          - copy_item.src is string
-          - copy_item.dest is string
-          - copy_item.resource is defined
-          - copy_item.resource in ['file', 'directory']
-        fail_msg: >-
-          Each entry in copy files must have 'src', 'dest' and 'resource' defined.
-          Offending entry: {{ copy_item }}
-      loop: >-
-        {{ linux_common_manifest 
-          | selectattr(
-             'task', 
-             'equalto',
-             'copy'
-            ) 
-          | map(attribute='files') 
-          | flatten 
-          | list 
-         }}
+          - lgsd.path is defined
+          - lgsd.path is string
+          - lgsd.path | length > 0
+          - lgsd.path.startswith('/')
+          - lgsd.list is defined
+          - lgsd.list is boolean
+          - lgsd.unmount is defined
+          - lgsd.unmount is boolean
+        fail_msg: "Fail linux_generic_storage.directories entry is malformed: {{ lgsd }}"
+      loop: "{{ linux_generic_storage.directories }}"
       loop_control:
-         loop_var: copy_item
+        loop_var: lgsd
+        label: "{{ lgsd.path }}"
 
-    - name: Assert permission changes have all required keys
-      when: >-
-       linux_common_manifest 
-       | selectattr(
-          'task', 
-          'equalto', 
-          'permissions'
-         )
-       | selectattr(
-          'target_hosts',
-          'contains', 
-          inventory_hostname
-         ) 
-       | list 
-       | length > 0
+    - name: Assert directories marked for unmount are currently mounted
+      when:
+        - linux_generic_storage.directories is defined
+        - lgsu.unmount | bool
       ansible.builtin.assert:
         that:
-          - perm_item.path is defined
-          - perm_item.path is string
-          - perm_item.owner is defined
-          - perm_item.owner is string
-          - perm_item.group is defined
-          - perm_item.group is string
-          - perm_item.mode is defined
-          - perm_item.mode is string
-        fail_msg: >-
-          Each entry in permissions changes must have 'path', 'owner', 'group', 'mode' and 'recurse' defined. 
-          Offending entry: {{ perm_item }}
-      loop: "{{ linux_common_manifest | selectattr('task', 'equalto', 'permissions') | map(attribute='changes') | flatten | list }}"
+          - lgsu.path in ansible_mounts | map(attribute='mount') | list
+        fail_msg: "Fail {{ lgsu.path }} is not currently mounted on {{ inventory_hostname }}"
+      loop: "{{ linux_generic_storage.directories }}"
       loop_control:
-        loop_var: perm_item
-
-- name: Stat paths for permission changes
-  when: >-
-    linux_common_manifest 
-    | selectattr(
-       'task', 
-       'equalto', 
-       'permissions'
-      ) 
-    | selectattr(
-       'enabled',
-       'equalto', 
-        true) 
-    | selectattr(
-       'target_hosts',
-       'contains',
-       inventory_hostname
-      ) 
-    | list 
-    | length > 0
-  ansible.builtin.stat:
-    path: "{{ perm_stat_item.path }}"
-  register: linux_common_manifest_permissions_checks_registered
-  loop: >-
-    {{ linux_common_manifest 
-     | selectattr(
-       'task', 
-       'equalto',
-       'permissions'
-       ) 
-     | selectattr(
-       'enabled', 
-       'equalto', 
-        true) 
-     | selectattr(
-       'target_hosts', 
-       'contains',
-       inventory_hostname
-       ) 
-     | map(attribute='changes') 
-     | flatten 
-     | list 
-    }}
-  loop_control:
-    loop_var: perm_stat_item
-    label: "{{ perm_stat_item.path }}"
-
-- name: Assert permission paths exist on remote host
-  when: >-
-    linux_common_manifest 
-    | selectattr(
-       'task',
-       'equalto',
-       'permissions'
-      ) 
-    | selectattr(
-       'enabled',
-       'equalto',
-        true
-      ) 
-    | selectattr(
-       'target_hosts',
-       'contains', 
-       inventory_hostname
-      ) 
-    | list 
-    | length > 0
-  ansible.builtin.assert:
-    that:
-      - perm_stat_result.stat.exists
-    fail_msg: >
-      Path does not exist on {{ inventory_hostname }}: {{ perm_stat_result.perm_stat_item.path }}.
-      Permissions cannot be applied to a non-existent path.
-  loop: "{{ linux_common_manifest_permissions_checks_registered.results | default([]) }}"
-  loop_control:
-    loop_var: perm_stat_result
-    label: "{{ perm_stat_result.perm_stat_item.path }}"
-
-- name: Assert stat paths list is not empty when enabled
-  when: >-
-    linux_common_manifest 
-    | selectattr(
-        'task', 
-        'equalto', 
-        'stat'
-      ) 
-    | list 
-    | length > 0
-  ansible.builtin.assert:
-    that:
-      - stat_entry.paths | length > 0
-    fail_msg: >-
-      A stat task entry is enabled but paths is empty.
-      Offending entry: {{ stat_entry }}
-  loop: >-
-    {{ linux_common_manifest 
-     | selectattr(
-         'task',
-         'equalto',
-         'stat'
-       ) 
-     | selectattr(
-         'enabled',
-         'equalto',
-         true) 
-     | list 
-    }}
-  loop_control:
-    loop_var: stat_entry
-
-- name: Assert remove confirmation flag is set
-  when: >-
-    linux_common_manifest 
-    | selectattr(
-       'task', 
-       'equalto', 
-       'remove'
-      ) 
-    | list 
-    | length > 0
-  ansible.builtin.assert:
-    that:
-      - remove_entry.yes_I_really_mean_it is defined
-      - remove_entry.yes_I_really_mean_it
-    fail_msg: >
-      A remove task is enabled but 'yes_I_really_mean_it' is not set to true.
-      Offending entry: {{ remove_entry }}
-  loop: >-
-    {{ linux_common_manifest 
-     | selectattr(
-        'task',
-        'equalto',
-        'remove'
-       ) 
-     | selectattr(
-         'enabled', 
-         'equalto', 
-          true) 
-     | list 
-    }}
-  loop_control:
-    loop_var: remove_entry
-
-- name: Assert remove paths list is not empty when enabled
-  when: >-
-    linux_common_manifest 
-    | selectattr(
-       'task',
-       'equalto',
-       'remove'
-      ) 
-    | list 
-    | length > 0
-  ansible.builtin.assert:
-    that:
-      - remove_entry.paths | length > 0
-    fail_msg: >
-      A remove task is enabled but paths is empty.
-      Offending entry: {{ remove_entry }}
-  loop: >-
-    {{ linux_common_manifest 
-     | selectattr(
-       'task', 
-       'equalto', 
-       'remove'
-       ) 
-     | selectattr(
-        'enabled', 
-        'equalto', 
-        true) 
-     | list 
-    }}
-  loop_control:
-    loop_var: remove_entry
+        loop_var: lgsu
+        label: "{{ lgsu.path }}"

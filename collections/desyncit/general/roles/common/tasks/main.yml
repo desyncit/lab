@@ -1,28 +1,24 @@
 ---
+---
 - name: Do generic task on RHEL hosts
+  when: ansible_distribution == "RedHat"
   block:
 
-    - name: Run asserts before doing anything
-      ansible.builtin.include_tasks:
+    - name: Import checks before run
+      ansible.builtin.import_tasks:
         file: checks.yml
 
-    - name: Run task linux_common
-      ansible.builtin.include_tasks:
-        file: "{{ bwfu.task ~ '.yml' }}"
-      loop: >-
-        {{ linux_common_manifest
-         | selectattr(
-           'enabled',
-           'equalto',
-            true
-           )
-         | selectattr(
-            'target_hosts',
-            'contains',
-            inventory_hostname
-           )
-         | list
-        }}
-      loop_control:
-        loop_var: bwfu
+    - name: Import compute tasks
+      when: linux_generic_compute is defined
+      ansible.builtin.import_tasks:
+        file: compute.yml
 
+    - name: Import storage tasks
+      when: linux_generic_storage is defined
+      ansible.builtin.import_tasks:
+        file: storage.yml
+
+    - name: Import network tasks
+      when: linux_generic_network is defined
+      ansible.builtin.import_tasks:
+        file: network.yml

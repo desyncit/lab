@@ -1,0 +1,37 @@
+---
+- name: Get filtered process tree
+  ansible.builtin.command:
+    cmd: pgrep -a {{ linux_generic_compute.process_filter }}
+  register: linux_generic_process_tree_registered
+  changed_when: false
+  failed_when: linux_generic_process_tree_registered.rc not in [0, 1]
+
+- name: Register process tree to hostvars
+  ansible.builtin.set_fact:
+    linux_generic_fproc: "{{ linux_generic_process_tree_registered.stdout_lines }}"
+    cacheable: true
+
+- name: Fail if no process is found
+  ansible.builtin.assert:
+    that:
+      - linux_generic_fproc | length > 0
+    fail_msg: "Fail no process matching '{{ linux_generic_compute.process_filter }}' found"
+
+- name: Output informational message
+  ansible.builtin.debug:
+    msg: "Process tree for {{ inventory_hostname }} registered to linux_generic_fproc"
+
+- name: Kill matched processes
+  when:
+    - linux_generic_fproc | length > 0
+    - linux_generic_compute.process_kill | bool
+  ansible.builtin.command:
+    cmd: pkill {{ linux_generic_compute.process_kill_signal }} {{ linux_generic_compute.process_filter }}
+  changed_when: true
+
+- name: Output kill informational message
+  when: linux_generic_compute.process_kill | bool
+  ansible.builtin.debug:
+    msg: >-
+      Killed processes matching '{{ linux_generic_compute.process_filter }}'
+      on {{ inventory_hostname }} with signal {{ linux_generic_compute.process_kill_signal }}

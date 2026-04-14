@@ -1,0 +1,103 @@
+---
+- name: Recursively remove files
+  when:
+    - linux_generic_storage.remove_paths is defined
+    - linux_generic_storage.remove_paths | length > 0
+  block:
+
+    - name: Recursively remove files
+      when: lgrm.yes_i_really_mean_it | bool
+      ansible.builtin.file:
+        path: "{{ lgrm.path }}"
+        state: absent
+      loop: "{{ linux_generic_storage.remove_paths }}"
+      loop_control:
+        loop_var: lgrm
+        label: "{{ lgrm.path }}"
+
+    - name: Output informational message
+      when: lgrm.yes_i_really_mean_it | bool
+      ansible.builtin.debug:
+        msg: "Recursively removed {{ lgrm.path }} on {{ inventory_hostname }}"
+      loop: "{{ linux_generic_storage.remove_paths }}"
+      loop_control:
+        loop_var: lgrm
+        label: "{{ lgrm.path }}"
+
+- name: List directory contents
+  when:
+    - linux_generic_storage.directories is defined
+    - linux_generic_storage.directories | length > 0
+    - linux_generic_storage.directories | selectattr('list', 'equalto', true) | list | length > 0
+  block:
+
+    - name: List directory contents
+      when: lgp.list | bool
+      ansible.builtin.find:
+        paths: "{{ lgp.path }}"
+        file_type: "{{ lgp.file_type | default('any') }}"
+      register: linux_generic_dir_contents_registered
+      loop: "{{ linux_generic_storage.directories }}"
+      loop_control:
+        loop_var: lgp
+        label: "{{ lgp.path }}"
+
+    - name: Set directory contents fact
+      ansible.builtin.set_fact:
+        linux_generic_dir_contents: >-
+          {{ linux_generic_dir_contents_registered.results
+           | map(attribute='files')
+           | map('map', attribute='path')
+           | list
+          }}
+        cacheable: true
+
+    - name: Output directory contents
+      when: lgdc.lgp.list | bool
+      ansible.builtin.debug:
+        msg: "Contents of {{ lgdc.lgp.path }}: {{ lgdc.files | map(attribute='path') | list }}"
+      loop: "{{ linux_generic_dir_contents_registered.results }}"
+      loop_control:
+        loop_var: lgdc
+        label: "{{ lgdc.lgp.path }}"
+
+- name: Unmount paths
+  when:
+    - linux_generic_storage.directories is defined
+    - linux_generic_storage.directories | length > 0
+    - linux_generic_storage.directories | selectattr('unmount', 'equalto', true) | list | length > 0
+  block:
+
+    - name: Unmount paths if mounted
+      when:
+        - lgup.unmount | bool
+        - lgup.path in ansible_mounts | map(attribute='mount') | list
+      ansible.posix.mount:
+        path: "{{ lgup.path }}"
+        state: unmounted
+      loop: "{{ linux_generic_storage.directories }}"
+      loop_control:
+        loop_var: lgup
+        label: "{{ lgup.path }}"
+
+    - name: Set unmounted paths fact
+      ansible.builtin.set_fact:
+        linux_generic_unmounted_paths: >-
+          {{ linux_generic_storage.directories
+           | selectattr('unmount', 'equalto', true)
+           | map(attribute='path')
+           | select('in', ansible_mounts | map(attribute='mount') | list)
+           | list
+          }}
+        cacheable: true
+
+    - name: Output informational message
+      when:
+        - lgoi.unmount | bool
+        - lgoi.path in ansible_mounts | map(attribute='mount') | list
+      ansible.builtin.debug:
+        msg: "Unmounted {{ lgoi.path }} on {{ inventory_hostname }}"
+      loop: "{{ linux_generic_storage.directories }}"
+      loop_control:
+        loop_var: lgoi
+        label: "{{ lgoi.path }}"

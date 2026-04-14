@@ -1,0 +1,45 @@
+---
+- name: Check if in check mode
+  when: ansible_check_mode
+  ansible.builtin.debug:
+    msg: "Check mode detected check mode no changes will be made"
+
+- name: Assert linux_file_content_path is valid
+  ansible.builtin.assert:
+    that:
+      - linux_file_content_path is defined
+      - linux_file_content_path | length > 0
+      - linux_file_content_path is string
+      - linux_file_content_path.startswith('/')
+    fail_msg: "Fail linux_file_content_path is malformed or undefined"
+
+- name: Gather facts on file path
+  ansible.builtin.stat:
+    path: "{{ linux_file_content_path }}"
+  register: linux_file_content_path_registered
+
+- name: Assert file path is not a directory
+  ansible.builtin.assert:
+    that:
+      - not linux_file_content_path_registered.stat.isdir
+    fail_msg: "Fail linux_file_content_path must not be a directory: {{ linux_file_content_path }}"
+
+- name: Assert linux_file_content_operation is valid
+  ansible.builtin.assert:
+    that:
+      - linux_file_content_operation in ['edit', 'concatenate']
+    fail_msg: >-
+      "Fail linux_file_content_operation must be 'edit' or 'concatenate': {{ linux_file_content_edit_mode }}"
+
+- name: Assert linux_file_content_edit_mode is valid
+  ansible.builtin.assert:
+    that:
+      - linux_file_content_edit_mode in ['line', 'replace', 'block']
+    fail_msg: >-
+      "Fail linux_file_content_operation must be 'line', 'replace' or 'block': {{ linux_file_content_edit_mode }}"
+
+- name: Assert linux_file_content_backup defined correctly
+  ansible.builtin.assert:
+    that:
+      - linux_file_content_backup is boolean
+    fail_msg: "Fail linux_file_content_backup must be true or false"
