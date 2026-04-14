@@ -1,0 +1,44 @@
+flowchart TD
+    A([Start]) --> B{ansible_distribution\n== RedHat?}
+    B -- No --> Z([Skip Role])
+    B -- Yes --> C[checks.yml]
+
+    %% Checks
+    C --> C1{ansible_check_mode?}
+    C1 -- Yes --> C1A[Debug: check mode\nno changes will be made]
+    C1 -- No --> C2
+    C1A --> C2
+
+    C2[Assert linux_file_content_path\nis defined, string, starts with /]
+    C2 --> C3[stat: linux_file_content_path]
+    C3 --> C4{is directory?}
+    C4 -- Yes --> C4A([FAIL: path must not\nbe a directory])
+    C4 -- No --> C5
+
+    C5[Assert linux_file_content_operation\nis edit or concatenate]
+    C5 --> C6[Assert linux_file_content_edit_mode\nis line, replace or block]
+    C6 --> C7[Assert linux_file_content_backup\nis boolean]
+
+    %% Operation gate
+    C7 --> OP{linux_file_content_operation?}
+
+    %% Concatenate branch
+    OP -- concatenate --> CON[concatenate.yml]
+    CON --> CON1[slurp: linux_file_content_path]
+    CON1 --> CON2[set_fact: linux_file_content_data\nb64decode]
+    CON2 --> CON3{data length > 0?}
+    CON3 -- Yes --> CON4[Debug: path registered\nto linux_file_content_data]
+    CON3 -- No --> CON_END([End concatenate])
+    CON4 --> CON_END
+
+    %% Edit branch
+    OP -- edit --> EDIT[edit.yml]
+    EDIT --> EDIT1{linux_file_content\n_edit_mode?}
+
+    EDIT1 -- line --> L[lineinfile\npath, line, regexp, backup\ndiff: true]
+    EDIT1 -- replace --> R[replace\npath, regexp,\nreplace_with, backup\ndiff: true]
+    EDIT1 -- block --> BK[blockinfile\npath, block, backup\ndiff: true]
+
+    L --> EDIT_END([End edit])
+    R --> EDIT_END
+    BK --> EDIT_END

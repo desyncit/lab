@@ -1,0 +1,60 @@
+flowchart TD
+    A([Start]) --> B{ansible_distribution\n== RedHat?}
+    B -- No --> Z([Skip Role])
+    B -- Yes --> C[checks.yml]
+
+    C --> D{linux_generic_compute\ndefined?}
+    C --> E{linux_generic_network\ndefined?}
+    C --> F{linux_generic_storage\ndefined?}
+
+    %% Compute branch
+    D -- No --> D_SKIP([Skip compute.yml])
+    D -- Yes --> D1[Validate process_filter\nprocess_kill\nprocess_kill_signal]
+    D1 --> D2[compute.yml]
+    D2 --> D3[pgrep -a process_filter]
+    D3 --> D4[set_fact: linux_generic_fproc\ncacheable: true]
+    D4 --> D5{process found?}
+    D5 -- No --> D6([FAIL])
+    D5 -- Yes --> D7{process_kill\n== true?}
+    D7 -- No --> D_END([End compute])
+    D7 -- Yes --> D8[pkill signal process_filter]
+    D8 --> D_END
+
+    %% Network branch
+    E -- No --> E_SKIP([Skip network.yml])
+    E -- Yes --> E1[Validate ss_all\nss_state\nss_protocol\nss_port]
+    E1 --> E2[network.yml]
+    E2 --> E3{ss_all == true?}
+    E3 -- Yes --> E4[ss -a -n]
+    E3 -- No --> E5[ss state protocol port -n]
+    E4 --> E6[set_fact: linux_generic_socket_stats\ncacheable: true]
+    E5 --> E6
+    E6 --> E_END([End network])
+
+    %% Storage branch
+    F -- No --> F_SKIP([Skip storage.yml])
+    F -- Yes --> F1[Validate remove_paths\ndirectories\nunmount paths are mounted]
+    F1 --> F2[storage.yml]
+
+    F2 --> F3{remove_paths\ndefined?}
+    F3 -- No --> F4
+    F3 -- Yes --> F3A{yes_i_really\n_mean_it == true?}
+    F3A -- No --> F3B([Skip removal])
+    F3A -- Yes --> F3C[file: state=absent]
+    F3C --> F4
+
+    F4{directories\ndefined?}
+    F4 -- No --> F_END([End storage])
+    F4 -- Yes --> F5{list == true?}
+    F5 -- Yes --> F6[find: file_type]
+    F6 --> F7[set_fact: linux_generic_dir_contents\ncacheable: true]
+    F7 --> F8
+    F5 -- No --> F8
+
+    F8{unmount == true?}
+    F8 -- No --> F_END
+    F8 -- Yes --> F9{path currently\nmounted?}
+    F9 -- No --> F10([Skip unmount])
+    F9 -- Yes --> F11[mount: state=unmounted]
+    F11 --> F12[set_fact: linux_generic_unmounted_paths\ncacheable: true]
+    F12 --> F_END
